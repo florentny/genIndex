@@ -1,6 +1,7 @@
 import os
 from PIL import Image
 from PIL.ExifTags import TAGS
+from pathlib import Path
 
 folder_root = "/home/fc/php/Album2/"
 #folder_root = "/home/fc/dev/photo3"
@@ -26,12 +27,45 @@ def get_start(header, dir_path):
         margin-top: 20px;
     }
 </style>
-<script type="text/javascript" src="_PATH_js/jquery-3.1.1.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
 <script src="_PATH_js/jquery.fancybox.js"></script>
 <link rel="stylesheet" type="text/css" href="_PATH_css/jquery.fancybox.css">
 <link rel="stylesheet" type="text/css" href="_PATH_css/album.css">
 </head>
 <body>
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-3281928-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+<div class="topnav" id="myTopnav">
+                <a href="_PATH_" title="go Home" class="active"><img src="_PATH_icon/home.png" /></a>
+                <a>|</a>
+                <a href="#top" title="go to top"><img src="_PATH_icon/chevron-up.png" /></a>
+                <a href="#bottom" title="go to bottom"><img src="_PATH_icon/chevron-down.png" /></a>
+                <a>|</a>
+                <a href="_PATH_index.php?nav=_BACK_" title=""><img src="_PATH_icon/chevron-left.png" /><span style="vertical-align:top">&nbsp;Back to _FOLDER_ albums</span></a>
+                <a>|</a>
+                <a href="_PATH_info.php"><img src="_PATH_icon/info.png" /></a>
+                <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+                  <i class="fa fa-bars"></i>
+                </a>
+        </div>
+
     <div class="titlealbum">
     '''
     with open(header, 'r') as headerfile:
@@ -39,13 +73,23 @@ def get_start(header, dir_path):
 
     html += '''
     </div>
-    <div class="pig-wrapper">
+    <div id="top"   class="pig-wrapper">
         <div id="pig"></div>
     </div>
     <script type="text/javascript" src="_PATH_js/pig_fancy.js"></script>
     <script type="text/javascript">
         var imageData = [
     '''
+
+    if os.path.isfile(dirpath + "/../title"):
+        with open(dirpath + "/../title") as fe:
+            folder_name = fe.read()
+        html = html.replace("_FOLDER_", folder_name)
+    else:
+        html = html.replace("_FOLDER_", "previous")
+
+    zzz = os.path.relpath(dir_path + "/..", folder_root + "/photo_dir")
+    html = html.replace("_BACK_", zzz)
     path_str = os.path.relpath(folder_root, dir_path) + "/"
     return html.replace("_PATH_", path_str)
 
@@ -59,6 +103,8 @@ def get_part2():
             }
         }).enable();
     </script>
+    <br />
+<div id="bottom">&copy; 2019 Florent Charpin</div>
 '''
     return html;
 
@@ -83,9 +129,11 @@ for dirpath, _, filenames in os.walk(folder_root):
         continue
     captions = getcaption(dirpath)
     html = get_start(dirpath + "/header.html", dirpath);
+    mtime = 0
     for path_image in filenames:
         if not path_image.lower().endswith("jpg"):
-            continue
+            if not path_image.lower().endswith("jpeg"):
+                continue
         if path_image == "albumthumb.jpg":
             continue
         image = os.path.abspath(os.path.join(dirpath, path_image))
@@ -95,6 +143,11 @@ for dirpath, _, filenames in os.walk(folder_root):
             info = img._getexif()
             size_images[path_image] = (width, height, ratio, info)
             image_list.append(path_image)
+        fmtime = os.path.getmtime(dirpath + "/" + path_image)
+        if fmtime > mtime:
+            mtime = fmtime;
+    Path(dirpath + "/" + "timestamp").touch()
+    os.utime(dirpath + "/" + "timestamp", (mtime, mtime))
     image_list.sort()
     for filename in image_list:
         html += f"{{\"filename\":\"{filename}\",\"aspectRatio\":{size_images[filename][2]}}},"
@@ -112,9 +165,11 @@ for dirpath, _, filenames in os.walk(folder_root):
             aperture = (" f/" + str(
                 round(size_images[filename][3][33437][0] / size_images[filename][3][33437][1], 1)) + "mm - ") if (
                     33437 in size_images[filename][3]) else ""
+            size = f"{size_images[filename][0]}x{size_images[filename][1]} - "
         caption = "" if captions.get(filename) is None else captions.get(filename)
-        html += f"<a href=\"{filename}\" data-caption=\"{caption}|{date}{iso}{focal}{speed}{aperture}{make}\" data-fancybox=\"photo3\" />"
+        html += f"<a href=\"{filename}\" data-caption=\"{caption}|{date}{iso}{focal}{speed}{aperture}{size}{make}\" data-fancybox=\"photo3\" />"
     existing = ""
+    html += "</body></html>"
     if os.path.isfile(dirpath + "/index.html"):
         with open(dirpath + "/index.html") as fe:
             existing = fe.read()

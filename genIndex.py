@@ -1,9 +1,11 @@
 import os
+import sys
+sys.path.append("/home/florent/scuba.florent.us/bin")
 from PIL import Image
 from PIL.ExifTags import TAGS
 from pathlib import Path
 
-folder_root = "/home/fc/php/Album2/"
+folder_root = "/home/florent/scuba.florent.us/"
 #folder_root = "/home/fc/dev/photo3"
 size_images = dict()
 image_list = []
@@ -150,7 +152,7 @@ for dirpath, _, filenames in os.walk(folder_root):
     os.utime(dirpath + "/" + "timestamp", (mtime, mtime))
     image_list.sort()
     for filename in image_list:
-        html += f"{{\"filename\":\"{filename}\",\"aspectRatio\":{size_images[filename][2]}}},"
+        html += "{{\"filename\":\"{}\",\"aspectRatio\":{}}},".format(filename, size_images[filename][2])
     html += get_part2()
     for filename in image_list:
         date = iso = speed = focal = make = aperture = ""
@@ -165,9 +167,9 @@ for dirpath, _, filenames in os.walk(folder_root):
             aperture = (" f/" + str(
                 round(size_images[filename][3][33437][0] / size_images[filename][3][33437][1], 1)) + "mm - ") if (
                     33437 in size_images[filename][3]) else ""
-            size = f"{size_images[filename][0]}x{size_images[filename][1]} - "
+            size = "{}x{} - ".format(size_images[filename][0],size_images[filename][1])
         caption = "" if captions.get(filename) is None else captions.get(filename)
-        html += f"<a href=\"{filename}\" data-caption=\"{caption}|{date}{iso}{focal}{speed}{aperture}{size}{make}\" data-fancybox=\"photo3\" />"
+        html += "<a href=\"{}\" data-caption=\"{}|{}{}{}{}{}{}{}\" data-fancybox=\"photo3\" />".format(filename, caption, date, iso, focal, speed, aperture, size, make)
     existing = ""
     html += "</body></html>"
     if os.path.isfile(dirpath + "/index.html"):

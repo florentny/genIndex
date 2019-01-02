@@ -55,14 +55,11 @@ def get_start(header, dir_path):
 </script>
 
 <div class="topnav" id="myTopnav">
-                <a href="_PATH_" title="go Home" class="active"><img src="_PATH_icon/home.png" /></a>
+                <a href="http://scuba.florent.us" title="go Home" class="active"><img src="_PATH_icon/home.png" /></a>
                 <a>|</a>
                 <a href="#top" title="go to top"><img src="_PATH_icon/chevron-up.png" /></a>
                 <a href="#bottom" title="go to bottom"><img src="_PATH_icon/chevron-down.png" /></a>
-                <a>|</a>
-                <a href="_PATH_index.php?nav=_BACK_" title=""><img src="_PATH_icon/chevron-left.png" /><span style="vertical-align:top">&nbsp;Back to _FOLDER_ albums</span></a>
-                <a>|</a>
-                <a href="_PATH_info.php"><img src="_PATH_icon/info.png" /></a>
+
                 <a href="javascript:void(0);" class="icon" onclick="myFunction()">
                   <i class="fa fa-bars"></i>
                 </a>
@@ -122,17 +119,17 @@ def getcaption(dirpath):
     return d
 
 
-for dirpath, _, filenames in os.walk(folder_root):
-    size_images = dict()
-    image_list = []
-    if not os.path.isfile(dirpath + "/header.html"):
-        continue
-    if os.path.isfile(dirpath + "/inplace.html"):
-        continue
+dirpath = folder_root + "/photo_dir"
+pix_order = []
+with open(dirpath + "/pixorder") as f:
+    for line in f:
+        (key, val) = line.split('|')
+        pix_order.append(key)
+
     captions = getcaption(dirpath)
     html = get_start(dirpath + "/header.html", dirpath);
     mtime = 0
-    for path_image in filenames:
+    for path_image in pix_order:
         if not path_image.lower().endswith("jpg"):
             if not path_image.lower().endswith("jpeg"):
                 continue
@@ -150,7 +147,7 @@ for dirpath, _, filenames in os.walk(folder_root):
             mtime = fmtime;
     Path(dirpath + "/" + "timestamp").touch()
     os.utime(dirpath + "/" + "timestamp", (mtime, mtime))
-    image_list.sort()
+    # image_list.sort()
     for filename in image_list:
         html += "{{\"filename\":\"{}\",\"aspectRatio\":{}}},".format(filename, size_images[filename][2])
     html += get_part2()

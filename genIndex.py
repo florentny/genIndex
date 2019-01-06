@@ -2,6 +2,7 @@ import os
 from PIL import Image
 from PIL.ExifTags import TAGS
 from pathlib import Path
+import time
 
 folder_root = "/home/fc/php/Album2/"
 #folder_root = "/home/fc/dev/photo3"
@@ -111,12 +112,39 @@ def getcaption(dirpath):
     return d
 
 
-for dirpath, _, filenames in os.walk(folder_root):
+def getalbumlist(dirpath):
+    d = []
+    if not os.path.isfile(dirpath + "/albumlist"):
+        return d
+    with open(dirpath + "/albumlist") as f:
+        for line in f:
+            key = line.split('|')[0]
+            d.append(key)
+    return d
+
+
+def getalbumtitle(dirpath):
+    d = {}
+    if not os.path.isfile(dirpath + "/albumlist"):
+        return d
+    with open(dirpath + "/albumlist") as f:
+        for line in f:
+            key, val = line.split('|')
+            d[key] = val
+    return d
+
+
+pic_count = {}
+for dirpath, _, filenames in os.walk(folder_root, False):
     size_images = dict()
     image_list = []
-    if not os.path.isfile(dirpath + "/header.html"):
-        continue
     if os.path.isfile(dirpath + "/inplace.html"):
+        pic_count[dirpath] = "1"
+        continue
+    if os.path.isfile(dirpath + "/albumlist"):
+        # print(dirpath + "/albumlist")
+        continue
+    if not os.path.isfile(dirpath + "/header.html"):
         continue
     captions = getcaption(dirpath)
     html = get_start(dirpath + "/header.html", dirpath);
@@ -140,6 +168,8 @@ for dirpath, _, filenames in os.walk(folder_root):
     Path(dirpath + "/" + "timestamp").touch()
     os.utime(dirpath + "/" + "timestamp", (mtime, mtime))
     image_list.sort()
+    # print(dirpath + ": " + str(len(image_list)))
+    pic_count[dirpath] = str(len(image_list))
     for filename in image_list:
         html += f"{{\"filename\":\"{filename}\",\"aspectRatio\":{size_images[filename][2]}}},"
     html += get_part2()
@@ -169,6 +199,89 @@ for dirpath, _, filenames in os.walk(folder_root):
         print(dirpath + '/index.html')
         with open(dirpath + '/index.html', 'w+') as fh:
             fh.write(html)
+
+print("\n\n\n")
+
+subfolders = [f.path for f in os.scandir(folder_root + "photo_dir") if f.is_dir()]
+# print(subfolders);
+
+
+def gen_album_list_index(folder, fcount, tcount):
+    smtimes = sorted(tcount, key=tcount.__getitem__, reverse=True)
+    html = '''
+<html>
+<head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>__TITLE__</title>
+        <link rel="stylesheet" type="text/css" href="_PATH_css/albumlist.css">
+</head>
+
+<body>
+
+<div id="banner">
+    <span  style="font-size: 28pt; vertical-align: top; font-weight: bold">
+Florent's Photo Album</span>
+</div>
+<br />
+<br />
+    
+'''
+    cell = '''<div class="pict"><a href="_FOLDER_/index.html"><img src="_FOLDER_/albumthumb.jpg" width="250px"><span class="caption">_TITLEALBUM_</span></a><span class="caption2">_COUNT_<br/>Updated _TIME_</span></div>'''
+
+    # for name, val in fcount.items():
+    a_title = getalbumtitle(folder)
+    for name in smtimes:
+        val = fcount[name]
+        if val == 1:
+            if (folder + "/" + name) in pic_count:
+                c = pic_count[folder + "/" + name] + " Picures"
+            else:
+                c = "0 Picures"
+        else:
+            c = str(val) + " Albums"
+        path_str = os.path.relpath(folder_root + "photo_dir/", folder) + "/"
+        html = html.replace("_PATH_", path_str)
+        html += cell.replace("_FOLDER_", name).replace("_TITLEALBUM_", a_title[name]).replace("_COUNT_", c).replace("_TIME_", time.strftime("%b %e %Y", time.gmtime(tcount[name])))
+        #print(time.strftime("%b %e %Y", time.gmtime(tcount[name])))
+    html += "</body></html>"
+    print(folder + '/index.html')
+    with open(folder + '/index.html', 'w+') as fh:
+        fh.write(html)
+    return
+
+
+def gen_album_list_page(folder, count):
+    if not os.path.isfile(folder + "/albumlist"):
+        if os.path.isfile(folder + "/header.html"):
+            if os.path.isfile(folder + "/timestamp"):
+                return 1, os.path.getmtime(folder + "/timestamp")
+            else:
+                return 1, 0
+        else:
+            return 0, 0
+    sub_folders = getalbumlist(folder)
+    if len(sub_folders) == 0:
+        return 0, 0
+    fcount = {}
+    tcount = {}
+    timestamp = 0
+    for name in sub_folders:
+            num, ts = gen_album_list_page(folder + "/" + name, 0)
+            fcount[name] = num
+            tcount[name] = ts
+            count += num
+            if ts > timestamp:
+                timestamp = ts
+    gen_album_list_index(folder, fcount, tcount)
+    # print(folder + " total sub: " + str(count))
+    return count, timestamp;
+
+
+
+
+
+print("\n\n\n")
+gen_album_list_page(folder_root + "photo_dir", 0)
 
 # print("\n\n\n\n" + os.path.relpath("/home/fc/dev/photo3/", "/home/fc/dev/photo3/photo_dir/maui"))
 

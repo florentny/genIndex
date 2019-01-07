@@ -221,7 +221,7 @@ def gen_album_list_index(folder, fcount, tcount):
 <html>
 <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <meta name="viewport" content="width=640">
+        <meta name="viewport" content="width=700">
         <title>__TITLE__</title>
         <link rel="stylesheet" type="text/css" href="_PATH_css/albumlist.css">
         <link rel="stylesheet" type="text/css" href="_PATH_css/album.css">
@@ -254,7 +254,7 @@ def gen_album_list_index(folder, fcount, tcount):
 
 </script>
 
-<script src="../js/showhide.js"></script>
+<script src="_PATH_js/showhide.js"></script>
 <object class="included" name="foo" type="text/html" data="_PATH_banner.html"></object>
 
 <div id="title2">

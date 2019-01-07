@@ -3,6 +3,7 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 from pathlib import Path
 import time
+import ntpath
 
 folder_root = "/home/fc/php/Album2/"
 #folder_root = "/home/fc/dev/photo3"
@@ -200,10 +201,18 @@ for dirpath, _, filenames in os.walk(folder_root, False):
         with open(dirpath + '/index.html', 'w+') as fh:
             fh.write(html)
 
-print("\n\n\n")
 
 subfolders = [f.path for f in os.scandir(folder_root + "photo_dir") if f.is_dir()]
 # print(subfolders);
+
+
+def get_albumlist_name(folder):
+    name = ntpath.basename(folder)
+    dir = os.path.dirname(folder)
+    d = getalbumtitle(dir)
+    if name in d:
+        return d[name]
+    return "&nbsp;"
 
 
 def gen_album_list_index(folder, fcount, tcount):
@@ -212,20 +221,55 @@ def gen_album_list_index(folder, fcount, tcount):
 <html>
 <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=640">
         <title>__TITLE__</title>
         <link rel="stylesheet" type="text/css" href="_PATH_css/albumlist.css">
+        <link rel="stylesheet" type="text/css" href="_PATH_css/album.css">
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 </head>
 
 <body>
-
-<div id="banner">
-    <span  style="font-size: 28pt; vertical-align: top; font-weight: bold">
-Florent's Photo Album</span>
+ <div class="topnav" id="myTopnav">
+<a href="_PATH_" title="go Home" class="active"><img src="_PATH_icon/home.png" /></a>
+ <a>|</a>
+<a href="../." title=""><img src="_PATH_icon/chevron-left.png" />
+ <span style="vertical-align:top"></span></a>
+ <a>|</a>
+ <a href="_PATH_info.html"><img src="_PATH_icon/info.png" /></a>
+ <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+  <i class="fa fa-bars"></i>
+ </a>
 </div>
-<br />
-<br />
-    
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-3281928-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+<script src="../js/showhide.js"></script>
+<object class="included" name="foo" type="text/html" data="_PATH_banner.html"></object>
+
+<div id="title2">
 '''
+    title = get_albumlist_name(folder)
+    if title == "&nbsp;":
+        html = html.replace("__TITLE__", "Photo Album")
+    else:
+        html = html.replace("__TITLE__", title)
+    html += title + "</div><div id=\"title3\">"
+    if title == "Scuba Diving\n":
+        html += "&nbsp;</div>"
+    else:
+        html += title + "</div>"
+
     cell = '''<div class="pict"><a href="_FOLDER_/index.html"><img src="_FOLDER_/albumthumb.jpg" width="250px"><span class="caption">_TITLEALBUM_</span></a><span class="caption2">_COUNT_<br/>Updated _TIME_</span></div>'''
 
     # for name, val in fcount.items():
@@ -244,9 +288,17 @@ Florent's Photo Album</span>
         html += cell.replace("_FOLDER_", name).replace("_TITLEALBUM_", a_title[name]).replace("_COUNT_", c).replace("_TIME_", time.strftime("%b %e %Y", time.gmtime(tcount[name])))
         #print(time.strftime("%b %e %Y", time.gmtime(tcount[name])))
     html += "</body></html>"
-    print(folder + '/index.html')
-    with open(folder + '/index.html', 'w+') as fh:
-        fh.write(html)
+    # print(folder + '/index.html')
+
+    if os.path.isfile(folder + "/index.html"):
+        with open(folder + "/index.html") as fe:
+            existing = fe.read()
+
+    if existing != html:
+        print(folder + '/index.html')
+        with open(folder + '/index.html', 'w+') as fh:
+            fh.write(html)
+
     return
 
 
@@ -293,3 +345,4 @@ gen_album_list_page(folder_root + "photo_dir", 0)
 # print("========")
 # print(info[36867])
 # print(size_images["IMG_0111.jpg"][3])
+

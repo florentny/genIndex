@@ -5,8 +5,8 @@ from pathlib import Path
 import time
 import ntpath
 
-folder_root = "/home/fc/php/Album2/"
-#folder_root = "/home/fc/dev/photo3"
+#folder_root = "/home/fc/php/Album2/"
+folder_root = "/home/fc/dev/photo3"
 size_images = dict()
 image_list = []
 
@@ -51,7 +51,7 @@ def get_start(header, dir_path):
                 <a href="#top" title="go to top"><img src="_PATH_icon/chevron-up.png" /></a>
                 <a href="#bottom" title="go to bottom"><img src="_PATH_icon/chevron-down.png" /></a>
                 <a>|</a>
-                <a href="_PATH_index.php?nav=_BACK_" title=""><img src="_PATH_icon/chevron-left.png" /><span style="vertical-align:top">&nbsp;Back to _FOLDER_ albums</span></a>
+                <a href="../." title=""><img src="_PATH_icon/chevron-left.png" /><span style="vertical-align:top">&nbsp;Back to _FOLDER_ albums</span></a>
                 <a>|</a>
                 <a href="_PATH_info.php"><img src="_PATH_icon/info.png" /></a>
                 <a href="javascript:void(0);" class="icon" onclick="myFunction()">
@@ -81,7 +81,7 @@ def get_start(header, dir_path):
     else:
         html = html.replace("_FOLDER_", "previous")
 
-    zzz = os.path.relpath(dir_path + "/..", folder_root + "/photo_dir")
+    zzz = os.path.relpath(dir_path + "/..", folder_root)
     html = html.replace("_BACK_", zzz)
     path_str = os.path.relpath(folder_root, dir_path) + "/"
     return html.replace("_PATH_", path_str)
@@ -202,7 +202,7 @@ for dirpath, _, filenames in os.walk(folder_root, False):
             fh.write(html)
 
 
-subfolders = [f.path for f in os.scandir(folder_root + "photo_dir") if f.is_dir()]
+subfolders = [f.path for f in os.scandir(folder_root) if f.is_dir()]
 # print(subfolders);
 
 
@@ -241,6 +241,9 @@ def gen_album_list_index(folder, fcount, tcount):
  </a>
 </div>
 <script type="text/javascript">
+    var banner_link = "_PATH_banner.html"
+</script>
+<script type="text/javascript">
 
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-3281928-2']);
@@ -255,7 +258,7 @@ def gen_album_list_index(folder, fcount, tcount):
 </script>
 
 <script src="_PATH_js/showhide.js"></script>
-<object class="included" name="foo" type="text/html" data="_PATH_banner.html"></object>
+<div id="banner"></div>
 
 <div id="title2">
 '''
@@ -283,7 +286,7 @@ def gen_album_list_index(folder, fcount, tcount):
                 c = "0 Picures"
         else:
             c = str(val) + " Albums"
-        path_str = os.path.relpath(folder_root + "photo_dir/", folder) + "/"
+        path_str = os.path.relpath(folder_root, folder) + "/"
         html = html.replace("_PATH_", path_str)
         html += cell.replace("_FOLDER_", name).replace("_TITLEALBUM_", a_title[name]).replace("_COUNT_", c).replace("_TIME_", time.strftime("%b %e %Y", time.gmtime(tcount[name])))
         #print(time.strftime("%b %e %Y", time.gmtime(tcount[name])))
@@ -333,7 +336,7 @@ def gen_album_list_page(folder, count):
 
 
 print("\n\n\n")
-gen_album_list_page(folder_root + "photo_dir", 0)
+gen_album_list_page(folder_root, 0)
 
 # print("\n\n\n\n" + os.path.relpath("/home/fc/dev/photo3/", "/home/fc/dev/photo3/photo_dir/maui"))
 

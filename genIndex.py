@@ -25,7 +25,7 @@ def get_start(header, dir_path):
   src="https://code.jquery.com/jquery-3.3.1.min.js"
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
   crossorigin="anonymous"></script>
-<script src="_PATH_js/jquery.fancybox.js"></script>
+<script src="_PATH_js/jquery.fancybox.min.js"></script>
 <link rel="stylesheet" type="text/css" href="_PATH_css/jquery.fancybox.css">
 <link rel="stylesheet" type="text/css" href="_PATH_css/album.css">
 </head>
@@ -69,7 +69,7 @@ def get_start(header, dir_path):
     <div id="top"   class="pig-wrapper">
         <div id="pig"></div>
     </div>
-    <script type="text/javascript" src="_PATH_js/pig_fancy.js"></script>
+    <script type="text/javascript" src="_PATH_js/pig_fancy.min.js"></script>
     <script type="text/javascript">
         var imageData = [
     '''

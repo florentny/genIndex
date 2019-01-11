@@ -5,7 +5,7 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 from pathlib import Path
 
-folder_root = "/home/florent/scuba.florent.us/"
+folder_root = "/home/florent/scuba.florent.us/photo_dir"
 #folder_root = "/home/fc/dev/photo3"
 size_images = dict()
 image_list = []
@@ -18,10 +18,14 @@ def get_start(header, dir_path):
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=640">
 <title>Photo Album</title>
 <style type="text/css">
     body {
-         padding: 2rem;
+	 padding-top: 0.5rem;
+         padding-right: 2rem;
+         padding-left: 2rem;
+         padding-bottom: 2rem;
     }
 
     .pig-wrapper {
@@ -54,16 +58,6 @@ def get_start(header, dir_path):
 
 </script>
 
-<div class="topnav" id="myTopnav">
-                <a href="http://scuba.florent.us" title="go Home" class="active"><img src="_PATH_icon/home.png" /></a>
-                <a>|</a>
-                <a href="#top" title="go to top"><img src="_PATH_icon/chevron-up.png" /></a>
-                <a href="#bottom" title="go to bottom"><img src="_PATH_icon/chevron-down.png" /></a>
-
-                <a href="javascript:void(0);" class="icon" onclick="myFunction()">
-                  <i class="fa fa-bars"></i>
-                </a>
-        </div>
 
     <div class="titlealbum">
     '''
@@ -87,7 +81,7 @@ def get_start(header, dir_path):
     else:
         html = html.replace("_FOLDER_", "previous")
 
-    zzz = os.path.relpath(dir_path + "/..", folder_root + "/photo_dir")
+    zzz = os.path.relpath(dir_path + "/..", folder_root)
     html = html.replace("_BACK_", zzz)
     path_str = os.path.relpath(folder_root, dir_path) + "/"
     return html.replace("_PATH_", path_str)
@@ -119,7 +113,19 @@ def getcaption(dirpath):
     return d
 
 
-dirpath = folder_root + "/photo_dir"
+def getlocation(dirpath):
+    d = {}
+    if not os.path.isfile(dirpath + "/locations"):
+        return d
+    with open(dirpath + "/locations") as f:
+        for line in f:
+            (key, val) = line.split('|')
+            d[key] = val
+    return d
+
+
+
+dirpath = folder_root
 pix_order = []
 with open(dirpath + "/pixorder") as f:
     for line in f:
@@ -127,6 +133,7 @@ with open(dirpath + "/pixorder") as f:
         pix_order.append(key)
 
     captions = getcaption(dirpath)
+    locations = getlocation(dirpath)
     html = get_start(dirpath + "/header.html", dirpath);
     mtime = 0
     for path_image in pix_order:
@@ -166,7 +173,9 @@ with open(dirpath + "/pixorder") as f:
                     33437 in size_images[filename][3]) else ""
             size = "{}x{} - ".format(size_images[filename][0],size_images[filename][1])
         caption = "" if captions.get(filename) is None else captions.get(filename)
-        html += "<a href=\"{}\" data-caption=\"{}|{}{}{}{}{}{}{}\" data-fancybox=\"photo3\" />".format(filename, caption, date, iso, focal, speed, aperture, size, make)
+        location = "" if locations.get(filename) is None else locations.get(filename)
+        # html += "<a href=\"{}\" data-caption=\"{}|{}{}{}{}{}{}{}\" data-fancybox=\"photo3\" />".format(filename, caption, date, iso, focal, speed, aperture, size, make)
+        html += "<a href=\"{}\" data-caption=\"{}|{}\" data-fancybox=\"photo3\" />".format(filename, location, caption)
     existing = ""
     html += "</body></html>"
     if os.path.isfile(dirpath + "/index.html"):

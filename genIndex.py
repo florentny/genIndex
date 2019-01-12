@@ -1,12 +1,12 @@
 import os
 import sys
-sys.path.append("/home/florent/scuba.florent.us/bin")
+# sys.path.append("/home/florent/scuba.florent.us/bin")
 from PIL import Image
 from PIL.ExifTags import TAGS
 from pathlib import Path
 
-folder_root = "/home/florent/scuba.florent.us/photo_dir"
-#folder_root = "/home/fc/dev/photo3"
+folder_root = "/run/media/fc/spare/photo"
+# folder_root = "/home/fc/dev/photo3"
 size_images = dict()
 image_list = []
 
@@ -74,6 +74,7 @@ def get_start(header, dir_path):
         var imageData = [
     '''
 
+
     if os.path.isfile(dirpath + "/../title"):
         with open(dirpath + "/../title") as fe:
             folder_name = fe.read()
@@ -127,65 +128,61 @@ def getlocation(dirpath):
 
 dirpath = folder_root
 pix_order = []
-with open(dirpath + "/pixorder") as f:
-    for line in f:
-        (key, val) = line.split('|')
-        pix_order.append(key)
-
-    captions = getcaption(dirpath)
-    locations = getlocation(dirpath)
-    html = get_start(dirpath + "/header.html", dirpath);
-    mtime = 0
-    for path_image in pix_order:
-        if not path_image.lower().endswith("jpg"):
-            if not path_image.lower().endswith("jpeg"):
-                continue
-        if path_image == "albumthumb.jpg":
+nlist = os.listdir(folder_root)
+captions = getcaption(dirpath)
+locations = getlocation(dirpath)
+html = get_start(dirpath + "/header.html", dirpath);
+mtime = 0
+for path_image in nlist:
+    if not path_image.lower().endswith("jpg"):
+        if not path_image.lower().endswith("jpeg"):
             continue
-        image = os.path.abspath(os.path.join(dirpath, path_image))
-        with Image.open(image) as img:
-            width, height = img.size
-            ratio = width / height
-            info = img._getexif()
-            size_images[path_image] = (width, height, ratio, info)
-            image_list.append(path_image)
-        fmtime = os.path.getmtime(dirpath + "/" + path_image)
-        if fmtime > mtime:
-            mtime = fmtime;
-    Path(dirpath + "/" + "timestamp").touch()
-    os.utime(dirpath + "/" + "timestamp", (mtime, mtime))
-    # image_list.sort()
-    for filename in image_list:
-        html += "{{\"filename\":\"{}\",\"aspectRatio\":{}}},".format(filename, size_images[filename][2])
-    html += get_part2()
-    for filename in image_list:
-        date = iso = speed = focal = make = aperture = ""
-        if size_images[filename][3] is None:
-            date = iso = speed = focal = make = ""
-        else:
-            make = (size_images[filename][3][272]) if (272 in size_images[filename][3]) else ""
-            date = (size_images[filename][3][36867] + " - ") if (36867 in size_images[filename][3]) else ""
-            iso = (" iso " + str(size_images[filename][3][34855]) + " - ") if (34855 in size_images[filename][3]) else ""
-            focal = (" focal: " + str(size_images[filename][3][37386][0]/size_images[filename][3][37386][1]) + "mm - ") if (37386 in size_images[filename][3]) else ""
-            speed = (" speed: " + str(size_images[filename][3][33434][0]) + "/" + str(size_images[filename][3][33434][1]) + " - ") if (33434 in size_images[filename][3]) else ""
-            aperture = (" f/" + str(
-                round(size_images[filename][3][33437][0] / size_images[filename][3][33437][1], 1)) + "mm - ") if (
-                    33437 in size_images[filename][3]) else ""
-            size = "{}x{} - ".format(size_images[filename][0],size_images[filename][1])
-        caption = "" if captions.get(filename) is None else captions.get(filename)
-        location = "" if locations.get(filename) is None else locations.get(filename)
-        # html += "<a href=\"{}\" data-caption=\"{}|{}{}{}{}{}{}{}\" data-fancybox=\"photo3\" />".format(filename, caption, date, iso, focal, speed, aperture, size, make)
-        html += "<a href=\"{}\" data-caption=\"{}|{}\" data-fancybox=\"photo3\" />".format(filename, location, caption)
-    existing = ""
-    html += "</body></html>"
-    if os.path.isfile(dirpath + "/index.html"):
-        with open(dirpath + "/index.html") as fe:
-            existing = fe.read()
+    if path_image == "albumthumb.jpg":
+        continue
+    image = os.path.abspath(os.path.join(dirpath, path_image))
+    with Image.open(image) as img:
+        width, height = img.size
+        ratio = width / height
+        info = img._getexif()
+        size_images[path_image] = (width, height, ratio, info)
+        image_list.append(path_image)
+    fmtime = os.path.getmtime(dirpath + "/" + path_image)
+    if fmtime > mtime:
+        mtime = fmtime;
+Path(dirpath + "/" + "timestamp").touch()
+os.utime(dirpath + "/" + "timestamp", (mtime, mtime))
+# image_list.sort()
+for filename in image_list:
+    html += "{{\"filename\":\"{}\",\"aspectRatio\":{}}},".format(filename, size_images[filename][2])
+html += get_part2()
+for filename in image_list:
+    date = iso = speed = focal = make = aperture = ""
+    if size_images[filename][3] is None:
+        date = iso = speed = focal = make = ""
+    else:
+        make = (size_images[filename][3][272]) if (272 in size_images[filename][3]) else ""
+        date = (size_images[filename][3][36867] + " - ") if (36867 in size_images[filename][3]) else ""
+        iso = (" iso " + str(size_images[filename][3][34855]) + " - ") if (34855 in size_images[filename][3]) else ""
+        focal = (" focal: " + str(size_images[filename][3][37386][0]/size_images[filename][3][37386][1]) + "mm - ") if (37386 in size_images[filename][3]) else ""
+        speed = (" speed: " + str(size_images[filename][3][33434][0]) + "/" + str(size_images[filename][3][33434][1]) + " - ") if (33434 in size_images[filename][3]) else ""
+        aperture = (" f/" + str(
+            round(size_images[filename][3][33437][0] / size_images[filename][3][33437][1], 1)) + "mm - ") if (
+                33437 in size_images[filename][3]) else ""
+        size = "{}x{} - ".format(size_images[filename][0],size_images[filename][1])
+    caption = "" if captions.get(filename) is None else captions.get(filename)
+    location = "" if locations.get(filename) is None else locations.get(filename)
+    # html += "<a href=\"{}\" data-caption=\"{}|{}{}{}{}{}{}{}\" data-fancybox=\"photo3\" />".format(filename, caption, date, iso, focal, speed, aperture, size, make)
+    html += "<a href=\"{}\" data-caption=\"{}|{}\" data-fancybox=\"photo3\" />".format(filename, location, caption)
+existing = ""
+html += "</body></html>"
+if os.path.isfile(dirpath + "/index.html"):
+    with open(dirpath + "/index.html") as fe:
+        existing = fe.read()
 
-    if existing != html:
-        print(dirpath + '/index.html')
-        with open(dirpath + '/index.html', 'w+') as fh:
-            fh.write(html)
+if existing != html:
+    print(dirpath + '/index.html')
+    with open(dirpath + '/index.html', 'w+') as fh:
+        fh.write(html)
 
 # print("\n\n\n\n" + os.path.relpath("/home/fc/dev/photo3/", "/home/fc/dev/photo3/photo_dir/maui"))
 

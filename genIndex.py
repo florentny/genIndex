@@ -11,6 +11,94 @@ size_images = dict()
 image_list = []
 
 
+def get_start_video(header, dir_path):
+    html = '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=640">
+    <title>Photo Album</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.min.js"
+      integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+      crossorigin="anonymous"></script>
+    <script src="_PATH_js/jquery.fancybox.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="_PATH_css/jquery.fancybox.css">
+    <link rel="stylesheet" type="text/css" href="_PATH_css/album.css">
+    
+    <style type="text/css">
+    .pict {
+        vertical-align: top;
+        display: inline-block;
+        text-align: center;
+        padding-right: 30px;
+        padding-left: 30px;
+        padding-top: 25px;
+        padding-bottom: px;
+    }
+    span.caption {
+        display: block;
+        font-size: 14pt; 
+        text-decoration: none; 
+        color: #0D0EBF;
+        font-weight: bold;
+        width: 250px;
+    }
+    </style>
+
+    </head>
+    <body>
+
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3281928-2']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+
+    <div class="topnav" id="myTopnav">
+                    <a href="_PATH_" title="go Home" class="active"><img src="_PATH_icon/home.png" /></a>
+                    <a>|</a>
+                    <a href="#top" title="go to top"><img src="_PATH_icon/chevron-up.png" /></a>
+                    <a href="#bottom" title="go to bottom"><img src="_PATH_icon/chevron-down.png" /></a>
+                    <a>|</a>
+                    <a href="../." title=""><img src="_PATH_icon/chevron-left.png" /><span style="vertical-align:top">&nbsp;Back to _FOLDER_ albums</span></a>
+                    <a>|</a>
+                    <a href="_PATH_info.php"><img src="_PATH_icon/info.png" /></a>
+                    <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+                      <i class="fa fa-bars"></i>
+                    </a>
+            </div>
+
+        <div class="titlealbum">
+        '''
+    with open(header, 'r') as headerfile:
+        html += headerfile.read()
+
+    if os.path.isfile(dirpath + "/../title"):
+        with open(dirpath + "/../title") as fe:
+            folder_name = fe.read()
+        html = html.replace("_FOLDER_", folder_name)
+    else:
+        html = html.replace("_FOLDER_", "previous")
+
+    zzz = os.path.relpath(dir_path + "/..", folder_root)
+    html = html.replace("_BACK_", zzz)
+    html += "</div><div style=\"text-align: center;\">"
+    path_str = os.path.relpath(folder_root, dir_path) + "/"
+    return html.replace("_PATH_", path_str)
+
+
 def get_start(header, dir_path):
     html = '''
 <!DOCTYPE html>
@@ -108,7 +196,7 @@ def getcaption(dirpath):
         return d
     with open(dirpath + "/captions") as f:
         for line in f:
-            (key, val) = line.split('|')
+            (key, val) = line.rstrip().split('|')
             d[key] = val
     return d
 
@@ -119,7 +207,7 @@ def getalbumlist(dirpath):
         return d
     with open(dirpath + "/albumlist") as f:
         for line in f:
-            key = line.split('|')[0]
+            key = line.rstrip().split('|')[0]
             d.append(key)
     return d
 
@@ -130,9 +218,34 @@ def getalbumtitle(dirpath):
         return d
     with open(dirpath + "/albumlist") as f:
         for line in f:
-            key, val = line.split('|')
+            key, val = line.rstrip().split('|')
             d[key] = val
     return d
+
+
+def gen_video(dirpath):
+    l = []
+    if not os.path.isfile(dirpath + "/video"):
+        return
+    with open(dirpath + "/video") as f:
+        for line in f:
+            l.append(line.rstrip().split('|'))
+
+    html = get_start_video(dirpath + "/header.html", dirpath);
+    for item in l:
+        html += f"<div class=\"pict\"><a data-fancybox href=\"https://{item[2]}\"><img width=\"300px\" class=\"card-img-top img-fluid\" data-caption=\"{item[1]}\" src=\"{item[0]}\"></a >"
+        html += f"<span class=\"caption\">{item[1]}</span></div>"
+    html += "</div></body></html>"
+    existing = ""
+    if os.path.isfile(dirpath + "/index.html"):
+        with open(dirpath + "/index.html") as fe:
+            existing = fe.read()
+    if existing != html:
+        print(dirpath + '/index.html')
+        with open(dirpath + '/index.html', 'w+') as fh:
+            fh.write(html)
+    pic_count[dirpath] = str(len(l)) + " videos"
+    return
 
 
 pic_count = {}
@@ -143,9 +256,11 @@ for dirpath, _, filenames in os.walk(folder_root, False):
         pic_count[dirpath] = "1"
         continue
     if os.path.isfile(dirpath + "/albumlist"):
-        # print(dirpath + "/albumlist")
         continue
     if not os.path.isfile(dirpath + "/header.html"):
+        continue
+    if os.path.isfile(dirpath + "/video"):
+        gen_video(dirpath)
         continue
     captions = getcaption(dirpath)
     html = get_start(dirpath + "/header.html", dirpath);
@@ -169,8 +284,7 @@ for dirpath, _, filenames in os.walk(folder_root, False):
     Path(dirpath + "/" + "timestamp").touch()
     os.utime(dirpath + "/" + "timestamp", (mtime, mtime))
     image_list.sort()
-    # print(dirpath + ": " + str(len(image_list)))
-    pic_count[dirpath] = str(len(image_list))
+    pic_count[dirpath] = str(len(image_list)) + " pictures"
     for filename in image_list:
         html += f"{{\"filename\":\"{filename}\",\"aspectRatio\":{size_images[filename][2]}}},"
     html += get_part2()
@@ -191,7 +305,7 @@ for dirpath, _, filenames in os.walk(folder_root, False):
         caption = "" if captions.get(filename) is None else captions.get(filename)
         html += f"<a href=\"{filename}\" data-caption=\"{caption}|{date}{iso}{focal}{speed}{aperture}{size}{make}\" data-fancybox=\"photo3\" />"
     existing = ""
-    html += "</body></html>"
+    html += "\n\n</body></html>"
     if os.path.isfile(dirpath + "/index.html"):
         with open(dirpath + "/index.html") as fe:
             existing = fe.read()
@@ -203,7 +317,6 @@ for dirpath, _, filenames in os.walk(folder_root, False):
 
 
 subfolders = [f.path for f in os.scandir(folder_root) if f.is_dir()]
-# print(subfolders);
 
 
 def get_albumlist_name(folder):
@@ -268,7 +381,7 @@ def gen_album_list_index(folder, fcount, tcount):
     else:
         html = html.replace("__TITLE__", title)
     html += title + "</div><div id=\"title3\">"
-    if title == "Scuba Diving\n":
+    if title == "Scuba Diving":
         html += "&nbsp;</div>"
     else:
         html += title + "</div>"
@@ -281,15 +394,14 @@ def gen_album_list_index(folder, fcount, tcount):
         val = fcount[name]
         if val == 1:
             if (folder + "/" + name) in pic_count:
-                c = pic_count[folder + "/" + name] + " Picures"
+                c = pic_count[folder + "/" + name]
             else:
-                c = "0 Picures"
+                c = ""
         else:
-            c = str(val) + " Albums"
+            c = str(val) + " albums"
         path_str = os.path.relpath(folder_root, folder) + "/"
         html = html.replace("_PATH_", path_str)
         html += cell.replace("_FOLDER_", name).replace("_TITLEALBUM_", a_title[name]).replace("_COUNT_", c).replace("_TIME_", time.strftime("%b %e %Y", time.gmtime(tcount[name])))
-        #print(time.strftime("%b %e %Y", time.gmtime(tcount[name])))
     html += "</body></html>"
     # print(folder + '/index.html')
 
@@ -328,14 +440,9 @@ def gen_album_list_page(folder, count):
             if ts > timestamp:
                 timestamp = ts
     gen_album_list_index(folder, fcount, tcount)
-    # print(folder + " total sub: " + str(count))
     return count, timestamp;
 
 
-
-
-
-print("\n\n\n")
 gen_album_list_page(folder_root, 0)
 
 # print("\n\n\n\n" + os.path.relpath("/home/fc/dev/photo3/", "/home/fc/dev/photo3/photo_dir/maui"))

@@ -19,8 +19,6 @@ def get_start_video(header, dir_path):
     <meta charset="utf-8">
     <meta name="viewport" content="width=640">
     <title>Photo Album</title>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script
       src="https://code.jquery.com/jquery-3.3.1.min.js"
       integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -67,14 +65,14 @@ def get_start_video(header, dir_path):
     </script>
 
     <div class="topnav" id="myTopnav">
-                    <a href="_PATH_" title="go Home" class="active"><img src="_PATH_icon/home.png" /></a>
-                    <a>|</a>
-                    <a href="#top" title="go to top"><img src="_PATH_icon/chevron-up.png" /></a>
-                    <a href="#bottom" title="go to bottom"><img src="_PATH_icon/chevron-down.png" /></a>
-                    <a>|</a>
-                    <a href="../." title=""><img src="_PATH_icon/chevron-left.png" /><span style="vertical-align:top">&nbsp;Back to _FOLDER_ albums</span></a>
-                    <a>|</a>
-                    <a href="_PATH_info.php"><img src="_PATH_icon/info.png" /></a>
+                    <a href="_PATH_" title="go Home" class="active"><img class="top" src="_PATH_icon/home.png" /></a>
+                    <img class="top" src="_PATH_icon/div.png" style="padding-top: 4px;"/>
+                    <a href="#top" title="go to top"><img class="top" src="_PATH_icon/chevron-up.png" /></a>
+                    <a href="#bottom" title="go to bottom"><img class="top" src="_PATH_icon/chevron-down.png" /></a>
+                    <img class="top" src="_PATH_icon/div.png" style="padding-top: 4px;"/>
+                    <a href="../." title=""><img class="top" src="_PATH_icon/chevron-left.png" /><span class="backto">&nbsp;Back to _FOLDER_ albums</span></a>
+                    <img class="top" src="_PATH_icon/div.png" style="padding-top: 4px;"/>
+                    <a href="_PATH_info.html"><img class="top" src="_PATH_icon/info.png" /></a>
                     <a href="javascript:void(0);" class="icon" onclick="myFunction()">
                       <i class="fa fa-bars"></i>
                     </a>
@@ -108,7 +106,6 @@ def get_start(header, dir_path):
 <meta name="viewport" content="width=640">
 <title>Photo Album</title>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <script
   src="https://code.jquery.com/jquery-3.3.1.min.js"
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -134,14 +131,14 @@ def get_start(header, dir_path):
 </script>
 
 <div class="topnav" id="myTopnav">
-                <a href="_PATH_" title="go Home" class="active"><img src="_PATH_icon/home.png" /></a>
-                <a>|</a>
-                <a href="#top" title="go to top"><img src="_PATH_icon/chevron-up.png" /></a>
-                <a href="#bottom" title="go to bottom"><img src="_PATH_icon/chevron-down.png" /></a>
-                <a>|</a>
-                <a href="../." title=""><img src="_PATH_icon/chevron-left.png" /><span style="vertical-align:top">&nbsp;Back to _FOLDER_ albums</span></a>
-                <a>|</a>
-                <a href="_PATH_info.php"><img src="_PATH_icon/info.png" /></a>
+                <a href="_PATH_" title="go Home" class="active"><img class="top" src="_PATH_icon/home.png" /></a>
+                <img class="top" src="_PATH_icon/div.png" style="padding-top: 4px;"/>
+                <a href="#top" title="go to top"><img class="top" src="_PATH_icon/chevron-up.png" /></a>
+                <a href="#bottom" title="go to bottom"><img class="top" src="_PATH_icon/chevron-down.png" /></a>
+                <img class="top" src="_PATH_icon/div.png" style="padding-top: 4px;"/>
+                <a href="../." title=""><img class="top" src="_PATH_icon/chevron-left.png" /><span class="backto">&nbsp;Back to _FOLDER_ albums</span></a>
+                <img class="top" src="_PATH_icon/div.png" style="padding-top: 4px;"/>
+                <a href="_PATH_info.php"><img class="top" src="_PATH_icon/info.png" /></a>
                 <a href="javascript:void(0);" class="icon" onclick="myFunction()">
                   <i class="fa fa-bars"></i>
                 </a>
@@ -299,11 +296,11 @@ for dirpath, _, filenames in os.walk(folder_root, False):
             focal = (" focal: " + str(size_images[filename][3][37386][0]/size_images[filename][3][37386][1]) + "mm - ") if (37386 in size_images[filename][3]) else ""
             speed = (" speed: " + str(size_images[filename][3][33434][0]) + "/" + str(size_images[filename][3][33434][1]) + " - ") if (33434 in size_images[filename][3]) else ""
             aperture = (" f/" + str(
-                round(size_images[filename][3][33437][0] / size_images[filename][3][33437][1], 1)) + "mm - ") if (
+                round(size_images[filename][3][33437][0] / size_images[filename][3][33437][1], 1)) + " - ") if (
                     33437 in size_images[filename][3]) else ""
             size = f"{size_images[filename][0]}x{size_images[filename][1]} - "
         caption = "" if captions.get(filename) is None else captions.get(filename)
-        html += f"<a href=\"{filename}\" data-caption=\"{caption}|{date}{iso}{focal}{speed}{aperture}{size}{make}\" data-fancybox=\"photo3\" />"
+        html += f"<a href=\"{filename}\" data-caption=\"{caption}|{filename} - {date}{iso}{focal}{speed}{aperture}{size}{make}\" data-fancybox=\"photo3\" />"
     existing = ""
     html += "\n\n</body></html>"
     if os.path.isfile(dirpath + "/index.html"):
@@ -343,12 +340,12 @@ def gen_album_list_index(folder, fcount, tcount):
 
 <body>
  <div class="topnav" id="myTopnav">
-<a href="_PATH_" title="go Home" class="active"><img src="_PATH_icon/home.png" /></a>
- <a>|</a>
-<a href="../." title=""><img src="_PATH_icon/chevron-left.png" />
+<a href="_PATH_" title="go Home" class="active"><img class="top" src="_PATH_icon/home.png" /></a>
+ <img class="top" src="_PATH_icon/div.png" style="padding-top: 4px;"/>
+<a href="../." title=""><img class="top"src="_PATH_icon/chevron-left.png" />
  <span style="vertical-align:top"></span></a>
- <a>|</a>
- <a href="_PATH_info.html"><img src="_PATH_icon/info.png" /></a>
+ <img class="top" src="_PATH_icon/div.png" style="padding-top: 4px;"/>
+ <a href="_PATH_info.html"><img class="top" src="_PATH_icon/info.png" /></a>
  <a href="javascript:void(0);" class="icon" onclick="myFunction()">
   <i class="fa fa-bars"></i>
  </a>

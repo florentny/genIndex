@@ -17,7 +17,7 @@ def get_start_video(header, dir_path):
     <html>
     <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=640">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Photo Album</title>
     <script
       src="https://code.jquery.com/jquery-3.3.1.min.js"
@@ -71,9 +71,7 @@ def get_start_video(header, dir_path):
                     <a href="#bottom" title="go to bottom"><img class="top" src="_PATH_icon/chevron-down.png" /></a>
                     <img class="top" src="_PATH_icon/div.png" style="padding-top: 4px;"/>
                     <a href="../." title=""><img class="top" src="_PATH_icon/chevron-left.png" /><span class="backto">&nbsp;Back to _FOLDER_ albums</span></a>
-                    <img class="top" src="_PATH_icon/div.png" style="padding-top: 4px;"/>
-                    <a href="_PATH_info.html"><img class="top" src="_PATH_icon/info.png" /></a>
-                    <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+                    <a href="_PATH_info.html" style="float:right"><img class="top" src="_PATH_icon/info.png" /></a>
                       <i class="fa fa-bars"></i>
                     </a>
             </div>
@@ -103,7 +101,7 @@ def get_start(header, dir_path):
 <html>
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=640">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Photo Album</title>
 
 <script
@@ -137,9 +135,7 @@ def get_start(header, dir_path):
                 <a href="#bottom" title="go to bottom"><img class="top" src="_PATH_icon/chevron-down.png" /></a>
                 <img class="top" src="_PATH_icon/div.png" style="padding-top: 4px;"/>
                 <a href="../." title=""><img class="top" src="_PATH_icon/chevron-left.png" /><span class="backto">&nbsp;Back to _FOLDER_ albums</span></a>
-                <img class="top" src="_PATH_icon/div.png" style="padding-top: 4px;"/>
-                <a href="_PATH_info.php"><img class="top" src="_PATH_icon/info.png" /></a>
-                <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+                <a href="_PATH_info.html" style="float:right"><img class="top" src="_PATH_icon/info.png" /></a>
                   <i class="fa fa-bars"></i>
                 </a>
         </div>
@@ -242,10 +238,12 @@ def gen_video(dirpath):
         with open(dirpath + '/index.html', 'w+') as fh:
             fh.write(html)
     pic_count[dirpath] = str(len(l)) + " videos"
+    pic_mov_count[dirpath] = (0, len(l))
     return
 
 
 pic_count = {}
+pic_mov_count = {}
 for dirpath, _, filenames in os.walk(folder_root, False):
     size_images = dict()
     image_list = []
@@ -282,6 +280,7 @@ for dirpath, _, filenames in os.walk(folder_root, False):
     os.utime(dirpath + "/" + "timestamp", (mtime, mtime))
     image_list.sort()
     pic_count[dirpath] = str(len(image_list)) + " pictures"
+    pic_mov_count[dirpath] = (len(image_list), 0)
     for filename in image_list:
         html += f"{{\"filename\":\"{filename}\",\"aspectRatio\":{size_images[filename][2]}}},"
     html += get_part2()
@@ -325,13 +324,13 @@ def get_albumlist_name(folder):
     return "&nbsp;"
 
 
-def gen_album_list_index(folder, fcount, tcount):
+def gen_album_list_index(folder, fcount, tcount, level):
     smtimes = sorted(tcount, key=tcount.__getitem__, reverse=True)
     html = '''
 <html>
 <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <meta name="viewport" content="width=700">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>__TITLE__</title>
         <link rel="stylesheet" type="text/css" href="_PATH_css/albumlist.css">
         <link rel="stylesheet" type="text/css" href="_PATH_css/album.css">
@@ -341,17 +340,16 @@ def gen_album_list_index(folder, fcount, tcount):
 <body>
  <div class="topnav" id="myTopnav">
 <a href="_PATH_" title="go Home" class="active"><img class="top" src="_PATH_icon/home.png" /></a>
- <img class="top" src="_PATH_icon/div.png" style="padding-top: 4px;"/>
-<a href="../." title=""><img class="top"src="_PATH_icon/chevron-left.png" />
+ <img class="top topback" src="_PATH_icon/div.png" style="padding-top: 4px;"/>
+<a href="../." title="" class="topback"><img class="top"src="_PATH_icon/chevron-left.png" />
  <span style="vertical-align:top"></span></a>
- <img class="top" src="_PATH_icon/div.png" style="padding-top: 4px;"/>
- <a href="_PATH_info.html"><img class="top" src="_PATH_icon/info.png" /></a>
- <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+ <a href="_PATH_info.html" style="float:right"><img class="top" src="_PATH_icon/info.png" /></a>
   <i class="fa fa-bars"></i>
  </a>
 </div>
 <script type="text/javascript">
-    var banner_link = "_PATH_banner.html"
+    var banner_link = "_PATH_banner.html";
+    var level = _LEVEL_;
 </script>
 <script type="text/javascript">
 
@@ -373,15 +371,12 @@ def gen_album_list_index(folder, fcount, tcount):
 <div id="title2">
 '''
     title = get_albumlist_name(folder)
+    html = html.replace("_LEVEL_", str(level))
     if title == "&nbsp;":
         html = html.replace("__TITLE__", "Photo Album")
     else:
         html = html.replace("__TITLE__", title)
-    html += title + "</div><div id=\"title3\">"
-    if title == "Scuba Diving":
-        html += "&nbsp;</div>"
-    else:
-        html += title + "</div>"
+    html += title + "</div>"
 
     cell = '''<div class="pict"><a href="_FOLDER_/index.html"><img src="_FOLDER_/albumthumb.jpg" width="250px"><span class="caption">_TITLEALBUM_</span></a><span class="caption2">_COUNT_<br/>Updated _TIME_</span></div>'''
 
@@ -410,37 +405,98 @@ def gen_album_list_index(folder, fcount, tcount):
         print(folder + '/index.html')
         with open(folder + '/index.html', 'w+') as fh:
             fh.write(html)
-
     return
 
 
-def gen_album_list_page(folder, count):
+def gen_info_page(folder, pix, mov, album):
+    html =    '''<html>
+<head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=640">
+        <title>Photo Album</title>
+        <link rel="stylesheet" type="text/css" href="./css/albumlist.css">
+        <link rel="stylesheet" type="text/css" href="./css/album.css">
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+ <div class="topnav" id="myTopnav">
+<a href="./" title="go Home" class="active"><img class="top"  src="./icon/home.png" /></a>
+ <a href="./info.html" style="float:right"><img class="top" src="./icdeon/info.png" /></a>
+  <i class="fa fa-bars"></i>
+ </a>
+</div>
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-3281928-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+<body>
+
+        <div id="content">
+                <br /><br />
+                Number of Albums: __ALBUM__<br />Number of Photos: __PIX__<br />Number of Movies: __MOV__<br /><br /><br />
+                 All pictures on this site are &#169; Florent Charpin. All rights reserved.
+                 <br />
+                 Web Software &#169; 2019 Florent Charpin
+                <br /><br />
+<div>For any info or questions please email &#119;&#119;&#119;&#064;&#099;&#104;&#097;&#114;&#112;&#105;&#110;&#046;&#110;&#101;&#116;</div>
+
+             </div>
+
+</body></html>
+'''
+    html = html.replace("__PIX__", str(pix)).replace("__MOV__", str(mov)).replace("__ALBUM__", str(album))
+    existing = ""
+    if os.path.isfile(folder + "/info.html"):
+        with open(folder + "/info.html") as fe:
+            existing = fe.read()
+
+    if existing != html:
+        print(folder + '/info.html')
+        with open(folder + '/info.html', 'w+') as fh:
+            fh.write(html)
+
+
+def gen_album_list_page(folder, count, level):
+    pix_count = 0
+    mov_count = 0
     if not os.path.isfile(folder + "/albumlist"):
         if os.path.isfile(folder + "/header.html"):
             if os.path.isfile(folder + "/timestamp"):
-                return 1, os.path.getmtime(folder + "/timestamp")
+                return 1, os.path.getmtime(folder + "/timestamp"), pic_mov_count[folder]
             else:
-                return 1, 0
+                return 1, 0, pic_mov_count[folder]
         else:
-            return 0, 0
+            return 0, 0, (0, 0)
     sub_folders = getalbumlist(folder)
     if len(sub_folders) == 0:
-        return 0, 0
+        return 0, 0, (0, 0)
     fcount = {}
     tcount = {}
     timestamp = 0
     for name in sub_folders:
-            num, ts = gen_album_list_page(folder + "/" + name, 0)
+            num, ts, pixmov = gen_album_list_page(folder + "/" + name, 0, level+1)
             fcount[name] = num
             tcount[name] = ts
             count += num
             if ts > timestamp:
                 timestamp = ts
-    gen_album_list_index(folder, fcount, tcount)
-    return count, timestamp;
+            pix_count += pixmov[0]
+            mov_count += pixmov[1]
+    gen_album_list_index(folder, fcount, tcount, level)
+    gen_info_page(folder, pix_count, mov_count, count)
+    # print("folder: " + folder + " albums: " + str(count) + " pix: " + str(pix_count) + " video: " + str(mov_count))
+    return count, timestamp, (pix_count, mov_count);
 
 
-gen_album_list_page(folder_root, 0)
+gen_album_list_page(folder_root, 0, 0)
 
 # print("\n\n\n\n" + os.path.relpath("/home/fc/dev/photo3/", "/home/fc/dev/photo3/photo_dir/maui"))
 

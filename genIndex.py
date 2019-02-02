@@ -5,18 +5,13 @@ from pathlib import Path
 import time
 import ntpath
 
-#folder_root = "/home/fc/php/Album2/"
-folder_root = "/home/fc/dev/photo3"
-size_images = dict()
-image_list = []
-
 
 def get_title_from_header(header):
     if not os.path.isfile(header):
         return "Photo Album"
     else:
         with open(header) as f:
-            title = f.readlines()[1];
+            title = f.readlines()[1].rstrip()
     return title
 
 
@@ -82,7 +77,6 @@ def get_start_video(header, dir_path):
                     <a href="../." title=""><img class="top" src="_PATH_icon/chevron-left.png" /><span class="backto">&nbsp;Back to _FOLDER_ albums</span></a>
                     <a href="_PATH_info.html" style="float:right"><img class="top" src="_PATH_icon/info.png" /></a>
                       <i class="fa fa-bars"></i>
-                    </a>
             </div>
 
         <div class="titlealbum">
@@ -146,13 +140,12 @@ def get_start(header, dir_path):
                 <a href="../." title=""><img class="top" src="_PATH_icon/chevron-left.png" /><span class="backto">&nbsp;Back to _FOLDER_ albums</span></a>
                 <a href="_PATH_info.html" style="float:right"><img class="top" src="_PATH_icon/info.png" /></a>
                   <i class="fa fa-bars"></i>
-                </a>
         </div>
 
     <div class="titlealbum">
     '''
-    with open(header, 'r') as headerfile:
-        html += headerfile.read()
+    with open(header, 'r') as header_file:
+        html += header_file.read()
 
     html += '''
     </div>
@@ -203,114 +196,65 @@ def getcaption(dirpath):
     return d
 
 
-def getalbumlist(dirpath):
+def get_album_list(dir_path):
     d = []
-    if not os.path.isfile(dirpath + "/albumlist"):
+    if not os.path.isfile(dir_path + "/albumlist"):
         return d
-    with open(dirpath + "/albumlist") as f:
+    with open(dir_path + "/albumlist") as f:
         for line in f:
             key = line.rstrip().split('|')[0]
             d.append(key)
     return d
 
 
-def getalbumtitle(dirpath):
+def get_album_title(dir_path):
     d = {}
-    if not os.path.isfile(dirpath + "/albumlist"):
+    if not os.path.isfile(dir_path + "/albumlist"):
         return d
-    with open(dirpath + "/albumlist") as f:
+    with open(dir_path + "/albumlist") as f:
         for line in f:
             key, val = line.rstrip().split('|')
             d[key] = val
     return d
 
 
-def gen_video(dirpath):
+def gen_video(dir_path):
     l = []
-    if not os.path.isfile(dirpath + "/video"):
+    if not os.path.isfile(dir_path + "/video"):
         return
-    with open(dirpath + "/video") as f:
+    with open(dir_path + "/video") as f:
         for line in f:
             l.append(line.rstrip().split('|'))
 
-    html = get_start_video(dirpath + "/header.html", dirpath);
+    html = get_start_video(dir_path + "/header.html", dir_path);
     for item in l:
         html += f"<div class=\"pict\"><a data-fancybox href=\"https://{item[2]}\"><img width=\"300px\" class=\"card-img-top img-fluid\" data-caption=\"{item[1]}\" src=\"{item[0]}\"></a >"
         html += f"<span class=\"caption\">{item[1]}</span></div>"
     html += "</div></body></html>"
     existing = ""
-    if os.path.isfile(dirpath + "/index.html"):
-        with open(dirpath + "/index.html") as fe:
+    if os.path.isfile(dir_path + "/index.html"):
+        with open(dir_path + "/index.html") as fe:
             existing = fe.read()
     if existing != html:
-        print(dirpath + '/index.html')
-        with open(dirpath + '/index.html', 'w+') as fh:
+        print(dir_path + '/index.html')
+        with open(dir_path + '/index.html', 'w+') as fh:
             fh.write(html)
-    pic_count[dirpath] = str(len(l)) + " videos"
-    pic_mov_count[dirpath] = (0, len(l))
+    pic_count[dir_path] = str(len(l)) + " videos"
+    pic_mov_count[dir_path] = (0, len(l))
     return
-
-
-recent_list = []
-recent_max = 100
 
 
 def most_recent_list(img_file, ts):
     recent_list.append((img_file, ts))
 
 
-pic_count = {}
-pic_mov_count = {}
-for dir_path, _, file_names in os.walk(folder_root, False):
-    if os.path.isfile(dir_path + "/inplace.html"):
-        pic_count[dir_path] = "1"
-        continue
-    if os.path.isfile(dir_path + "/albumlist"):
-        continue
-    if not os.path.isfile(dir_path + "/header.html"):
-        continue
-    if os.path.isfile(dir_path + "/video"):
-        gen_video(dir_path)
-        continue
-    captions = getcaption(dir_path)
-    html = get_start(dir_path + "/header.html", dir_path);
-    m_time = 0
-    t_count = {}
-    size_images = dict()
-    image_list = []
-    for path_image in file_names:
-        if not path_image.lower().endswith("jpg"):
-            if not path_image.lower().endswith("jpeg"):
-                continue
-        if path_image == "albumthumb.jpg":
-            continue
-        image = os.path.abspath(os.path.join(dir_path, path_image))
-        with Image.open(image) as img:
-            width, height = img.size
-            ratio = width / height
-            info = img._getexif()
-            size_images[path_image] = (width, height, ratio, info)
-            image_list.append(path_image)
-            t_count[path_image] = os.path.getmtime(image)
-        fm_time = os.path.getmtime(dir_path + "/" + path_image)
-        most_recent_list(dir_path + "/" + path_image, fm_time)
-        if fm_time > m_time:
-            m_time = fm_time;
-    Path(dir_path + "/" + "timestamp").touch()
-    os.utime(dir_path + "/" + "timestamp", (m_time, m_time))
-    image_list.sort()
-    if os.path.isfile(dir_path + "/reverse_time"):
-        image_list = sorted(t_count, key=t_count.__getitem__, reverse=True)
-    pic_count[dir_path] = str(len(image_list)) + " pictures"
-    pic_mov_count[dir_path] = (len(image_list), 0)
+def gen_index_photos(dir_path, image_list, html, size_images, captions):
     for filename in image_list:
-        html += f"{{\"filename\":\"{filename}\",\"aspectRatio\":{size_images[filename][2]}}},"
-    html += get_part2()
-    for filename in image_list:
-        date = iso = speed = focal = make = aperture = ""
         if size_images[filename][3] is None:
-            date = iso = speed = focal = make = ""
+            date = iso = speed = focal = make = aperture = size = ""
+            f_name = filename
         else:
+            f_name = filename + " - "
             make = (size_images[filename][3][272]) if (272 in size_images[filename][3]) else ""
             date = (size_images[filename][3][36867] + " - ") if (36867 in size_images[filename][3]) else ""
             iso = (" iso " + str(size_images[filename][3][34855]) + " - ") if (34855 in size_images[filename][3]) else ""
@@ -321,7 +265,7 @@ for dir_path, _, file_names in os.walk(folder_root, False):
                     33437 in size_images[filename][3]) else ""
             size = f"{size_images[filename][0]}x{size_images[filename][1]} - "
         caption = "" if captions.get(filename) is None else captions.get(filename)
-        html += f"<a href=\"{filename}\" data-caption=\"{caption}|{filename} - {date}{iso}{focal}{speed}{aperture}{size}{make}\" data-fancybox=\"photo3\" />"
+        html += f"<a href=\"{filename}\" data-caption=\"{caption}|{f_name}{date}{iso}{focal}{speed}{aperture}{size}{make}\" data-fancybox=\"photo3\" />"
     existing = ""
     html += "\n\n</body></html>"
     if os.path.isfile(dir_path + "/index.html"):
@@ -334,13 +278,59 @@ for dir_path, _, file_names in os.walk(folder_root, False):
             fh.write(html)
 
 
-sub_folders = [f.path for f in os.scandir(folder_root) if f.is_dir()]
+def main_photos():
+    for dir_path, _, file_names in os.walk(folder_root, False):
+        if os.path.isfile(dir_path + "/inplace.html"):
+            pic_count[dir_path] = "1"
+            continue
+        if os.path.isfile(dir_path + "/albumlist"):
+            continue
+        if not os.path.isfile(dir_path + "/header.html"):
+            continue
+        if os.path.isfile(dir_path + "/video"):
+            gen_video(dir_path)
+            continue
+        captions = getcaption(dir_path)
+        html = get_start(dir_path + "/header.html", dir_path);
+        m_time = 0
+        t_count = {}
+        size_images = dict()
+        image_list = []
+        for path_image in file_names:
+            if not path_image.lower().endswith("jpg"):
+                if not path_image.lower().endswith("jpeg"):
+                    continue
+            if path_image == "albumthumb.jpg":
+                continue
+            image = os.path.abspath(os.path.join(dir_path, path_image))
+            with Image.open(image) as img:
+                width, height = img.size
+                ratio = width / height
+                info = img._getexif()
+                size_images[path_image] = (width, height, ratio, info)
+                image_list.append(path_image)
+                t_count[path_image] = os.path.getmtime(image)
+            fm_time = os.path.getmtime(dir_path + "/" + path_image)
+            most_recent_list(dir_path + "/" + path_image, fm_time)
+            if fm_time > m_time:
+                m_time = fm_time;
+        Path(dir_path + "/" + "timestamp").touch()
+        os.utime(dir_path + "/" + "timestamp", (m_time, m_time))
+        image_list.sort()
+        if os.path.isfile(dir_path + "/reverse_time"):
+            image_list = sorted(t_count, key=t_count.__getitem__, reverse=True)
+        pic_count[dir_path] = str(len(image_list)) + " pictures"
+        pic_mov_count[dir_path] = (len(image_list), 0)
+        for filename in image_list:
+            html += f"{{\"filename\":\"{filename}\",\"aspectRatio\":{size_images[filename][2]}}},"
+        html += get_part2()
+        gen_index_photos(dir_path, image_list, html, size_images, captions)
 
 
 def get_albumlist_name(folder):
     name = ntpath.basename(folder)
     dir = os.path.dirname(folder)
-    d = getalbumtitle(dir)
+    d = get_album_title(dir)
     if name in d:
         return d[name]
     return "&nbsp;"
@@ -367,7 +357,6 @@ def gen_album_list_index(folder, fcount, tcount, level):
  <span style="vertical-align:top"></span></a>
  <a href="_PATH_info.html" style="float:right"><img class="top" src="_PATH_icon/info.png" /></a>
   <i class="fa fa-bars"></i>
- </a>
 </div>
 <script type="text/javascript">
     var banner_link = "_PATH_banner.html";
@@ -403,7 +392,7 @@ def gen_album_list_index(folder, fcount, tcount, level):
     cell = '''<div class="pict"><a href="_FOLDER_/index.html"><img src="_FOLDER_/albumthumb.jpg" width="250px"><span class="caption">_TITLEALBUM_</span></a><span class="caption2">_COUNT_<br/>Updated _TIME_</span></div>'''
 
     # for name, val in fcount.items():
-    a_title = getalbumtitle(folder)
+    a_title = get_album_title(folder)
     for name in smtimes:
         val = fcount[name]
         if val == 1:
@@ -446,7 +435,6 @@ def gen_info_page(folder, pix, mov, album):
 <a href="./" title="go Home" class="active"><img class="top"  src="./icon/home.png" /></a>
  <a href="./info.html" style="float:right"><img class="top" src="./icdeon/info.png" /></a>
   <i class="fa fa-bars"></i>
- </a>
 </div>
 <script type="text/javascript">
   var _gaq = _gaq || [];
@@ -497,7 +485,7 @@ def gen_album_list_page(folder, count, level):
                 return 1, 0, pic_mov_count[folder]
         else:
             return 0, 0, (0, 0)
-    sub_folders = getalbumlist(folder)
+    sub_folders = get_album_list(folder)
     if len(sub_folders) == 0:
         return 0, 0, (0, 0)
     fcount = {}
@@ -518,10 +506,20 @@ def gen_album_list_page(folder, count, level):
     return count, timestamp, (pix_count, mov_count);
 
 
-gen_album_list_page(folder_root, 0, 0)
+if __name__ == "__main__":
+    # folder_root = "/home/fc/php/Album2/"
+    folder_root = "/home/fc/dev/photo3"
+    recent_list = []
+    recent_max = 100
+    pic_count = {}
+    pic_mov_count = {}
+    main_photos()
+    sub_folders = [f.path for f in os.scandir(folder_root) if f.is_dir()]
+    gen_album_list_page(folder_root, 0, 0)
+    print(len(recent_list))
 
 # print("\n\n\n\n" + os.path.relpath("/home/fc/dev/photo3/", "/home/fc/dev/photo3/photo_dir/maui"))
-print(len(recent_list))
+
 #print(get_start())
 
 # for tag, value in size_images["IMG_4076.jpg"][3].items():

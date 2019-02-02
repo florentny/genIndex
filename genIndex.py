@@ -11,6 +11,15 @@ size_images = dict()
 image_list = []
 
 
+def get_title_from_header(header):
+    if not os.path.isfile(header):
+        return "Photo Album"
+    else:
+        with open(header) as f:
+            title = f.readlines()[1];
+    return title
+
+
 def get_start_video(header, dir_path):
     html = '''
     <!DOCTYPE html>
@@ -18,7 +27,7 @@ def get_start_video(header, dir_path):
     <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Photo Album</title>
+    <title>_TITLE_</title>
     <script
       src="https://code.jquery.com/jquery-3.3.1.min.js"
       integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -81,13 +90,13 @@ def get_start_video(header, dir_path):
     with open(header, 'r') as headerfile:
         html += headerfile.read()
 
-    if os.path.isfile(dirpath + "/../title"):
-        with open(dirpath + "/../title") as fe:
+    if os.path.isfile(dir_path + "/../title"):
+        with open(dir_path + "/../title") as fe:
             folder_name = fe.read()
         html = html.replace("_FOLDER_", folder_name)
     else:
         html = html.replace("_FOLDER_", "previous")
-
+    html = html.replace("_TITLE_", get_title_from_header(header))
     zzz = os.path.relpath(dir_path + "/..", folder_root)
     html = html.replace("_BACK_", zzz)
     html += "</div><div style=\"text-align: center;\">"
@@ -102,7 +111,7 @@ def get_start(header, dir_path):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Photo Album</title>
+<title>_TITLE_</title>
 
 <script
   src="https://code.jquery.com/jquery-3.3.1.min.js"
@@ -155,13 +164,13 @@ def get_start(header, dir_path):
         var imageData = [
     '''
 
-    if os.path.isfile(dirpath + "/../title"):
-        with open(dirpath + "/../title") as fe:
+    if os.path.isfile(dir_path + "/../title"):
+        with open(dir_path + "/../title") as fe:
             folder_name = fe.read()
         html = html.replace("_FOLDER_", folder_name)
     else:
         html = html.replace("_FOLDER_", "previous")
-
+    html = html.replace("_TITLE_", get_title_from_header(header))
     zzz = os.path.relpath(dir_path + "/..", folder_root)
     html = html.replace("_BACK_", zzz)
     path_str = os.path.relpath(folder_root, dir_path) + "/"
@@ -242,45 +251,58 @@ def gen_video(dirpath):
     return
 
 
+recent_list = []
+recent_max = 100
+
+
+def most_recent_list(img_file, ts):
+    recent_list.append((img_file, ts))
+
+
 pic_count = {}
 pic_mov_count = {}
-for dirpath, _, filenames in os.walk(folder_root, False):
+for dir_path, _, file_names in os.walk(folder_root, False):
+    if os.path.isfile(dir_path + "/inplace.html"):
+        pic_count[dir_path] = "1"
+        continue
+    if os.path.isfile(dir_path + "/albumlist"):
+        continue
+    if not os.path.isfile(dir_path + "/header.html"):
+        continue
+    if os.path.isfile(dir_path + "/video"):
+        gen_video(dir_path)
+        continue
+    captions = getcaption(dir_path)
+    html = get_start(dir_path + "/header.html", dir_path);
+    m_time = 0
+    t_count = {}
     size_images = dict()
     image_list = []
-    if os.path.isfile(dirpath + "/inplace.html"):
-        pic_count[dirpath] = "1"
-        continue
-    if os.path.isfile(dirpath + "/albumlist"):
-        continue
-    if not os.path.isfile(dirpath + "/header.html"):
-        continue
-    if os.path.isfile(dirpath + "/video"):
-        gen_video(dirpath)
-        continue
-    captions = getcaption(dirpath)
-    html = get_start(dirpath + "/header.html", dirpath);
-    mtime = 0
-    for path_image in filenames:
+    for path_image in file_names:
         if not path_image.lower().endswith("jpg"):
             if not path_image.lower().endswith("jpeg"):
                 continue
         if path_image == "albumthumb.jpg":
             continue
-        image = os.path.abspath(os.path.join(dirpath, path_image))
+        image = os.path.abspath(os.path.join(dir_path, path_image))
         with Image.open(image) as img:
             width, height = img.size
             ratio = width / height
             info = img._getexif()
             size_images[path_image] = (width, height, ratio, info)
             image_list.append(path_image)
-        fmtime = os.path.getmtime(dirpath + "/" + path_image)
-        if fmtime > mtime:
-            mtime = fmtime;
-    Path(dirpath + "/" + "timestamp").touch()
-    os.utime(dirpath + "/" + "timestamp", (mtime, mtime))
+            t_count[path_image] = os.path.getmtime(image)
+        fm_time = os.path.getmtime(dir_path + "/" + path_image)
+        most_recent_list(dir_path + "/" + path_image, fm_time)
+        if fm_time > m_time:
+            m_time = fm_time;
+    Path(dir_path + "/" + "timestamp").touch()
+    os.utime(dir_path + "/" + "timestamp", (m_time, m_time))
     image_list.sort()
-    pic_count[dirpath] = str(len(image_list)) + " pictures"
-    pic_mov_count[dirpath] = (len(image_list), 0)
+    if os.path.isfile(dir_path + "/reverse_time"):
+        image_list = sorted(t_count, key=t_count.__getitem__, reverse=True)
+    pic_count[dir_path] = str(len(image_list)) + " pictures"
+    pic_mov_count[dir_path] = (len(image_list), 0)
     for filename in image_list:
         html += f"{{\"filename\":\"{filename}\",\"aspectRatio\":{size_images[filename][2]}}},"
     html += get_part2()
@@ -302,17 +324,17 @@ for dirpath, _, filenames in os.walk(folder_root, False):
         html += f"<a href=\"{filename}\" data-caption=\"{caption}|{filename} - {date}{iso}{focal}{speed}{aperture}{size}{make}\" data-fancybox=\"photo3\" />"
     existing = ""
     html += "\n\n</body></html>"
-    if os.path.isfile(dirpath + "/index.html"):
-        with open(dirpath + "/index.html") as fe:
+    if os.path.isfile(dir_path + "/index.html"):
+        with open(dir_path + "/index.html") as fe:
             existing = fe.read()
 
     if existing != html:
-        print(dirpath + '/index.html')
-        with open(dirpath + '/index.html', 'w+') as fh:
+        print(dir_path + '/index.html')
+        with open(dir_path + '/index.html', 'w+') as fh:
             fh.write(html)
 
 
-subfolders = [f.path for f in os.scandir(folder_root) if f.is_dir()]
+sub_folders = [f.path for f in os.scandir(folder_root) if f.is_dir()]
 
 
 def get_albumlist_name(folder):
@@ -499,7 +521,7 @@ def gen_album_list_page(folder, count, level):
 gen_album_list_page(folder_root, 0, 0)
 
 # print("\n\n\n\n" + os.path.relpath("/home/fc/dev/photo3/", "/home/fc/dev/photo3/photo_dir/maui"))
-
+print(len(recent_list))
 #print(get_start())
 
 # for tag, value in size_images["IMG_4076.jpg"][3].items():

@@ -115,7 +115,7 @@ def get_start(header, dir_path):
 <link rel="stylesheet" type="text/css" href="_PATH_css/jquery.fancybox.css">
 <link rel="stylesheet" type="text/css" href="_PATH_css/album.css">
 </head>
-<body>
+<body id="myTopnav">
 
 <script type="text/javascript">
 
@@ -131,14 +131,15 @@ def get_start(header, dir_path):
 
 </script>
 
-<div class="topnav" id="myTopnav">
-                <a href="_PATH_" title="go Home" class="active"><img class="top" src="_PATH_icon/home.png" /></a>
+<div class="topnav">
+                <a href="_PATH_" title="Go Home" class="active"><img class="top" src="_PATH_icon/home.png" /></a>
                 <img class="top" src="_PATH_icon/div.png" style="padding-top: 4px;"/>
-                <a href="#top" title="go to top"><img class="top" src="_PATH_icon/chevron-up.png" /></a>
-                <a href="#bottom" title="go to bottom"><img class="top" src="_PATH_icon/chevron-down.png" /></a>
+                <a href="#top" title="Go to top"><img class="top" src="_PATH_icon/chevron-up.png" /></a>
+                <a href="#bottom" title="Go to bottom"><img class="top" src="_PATH_icon/chevron-down.png" /></a>
                 <img class="top" src="_PATH_icon/div.png" style="padding-top: 4px;"/>
                 <a href="../." title=""><img class="top" src="_PATH_icon/chevron-left.png" /><span class="backto">&nbsp;Back to _FOLDER_ albums</span></a>
-                <a href="_PATH_info.html" style="float:right"><img class="top" src="_PATH_icon/info.png" /></a>
+                <a href="_PATH_info.html" title="Info" style="float:right"><img class="top" src="_PATH_icon/info.png" /></a>
+                <a href="_ORDER_INDEX_" class="order" title="Switch order"><img class="top" src="_PATH_icon/order.png" /></a>
                   <i class="fa fa-bars"></i>
         </div>
 
@@ -185,7 +186,23 @@ def get_part2():
     return html;
 
 
-def getcaption(dirpath):
+def get_part3():
+    html = '''
+];
+        var pig = new Pig(imageData, {
+            urlForSize: function(filename, size) {
+                var pos = filename.lastIndexOf('/')
+                return filename.substring(0,pos) + '/img/' + size + filename.substring(pos, filename.length)
+            }
+        }).enable();
+    </script>
+    <br />
+<div id="bottom">&copy; 2019 Florent Charpin</div>
+'''
+    return html;
+
+
+def get_caption(dirpath):
     d = {}
     if not os.path.isfile(dirpath + "/captions"):
         return d
@@ -219,15 +236,15 @@ def get_album_title(dir_path):
 
 
 def gen_video(dir_path):
-    l = []
+    vl = []
     if not os.path.isfile(dir_path + "/video"):
         return
     with open(dir_path + "/video") as f:
         for line in f:
-            l.append(line.rstrip().split('|'))
+            vl.append(line.rstrip().split('|'))
 
     html = get_start_video(dir_path + "/header.html", dir_path);
-    for item in l:
+    for item in vl:
         html += f"<div class=\"pict\"><a data-fancybox href=\"https://{item[2]}\"><img width=\"300px\" class=\"card-img-top img-fluid\" data-caption=\"{item[1]}\" src=\"{item[0]}\"></a >"
         html += f"<span class=\"caption\">{item[1]}</span></div>"
     html += "</div></body></html>"
@@ -239,16 +256,16 @@ def gen_video(dir_path):
         print(dir_path + '/index.html')
         with open(dir_path + '/index.html', 'w+') as fh:
             fh.write(html)
-    pic_count[dir_path] = str(len(l)) + " videos"
-    pic_mov_count[dir_path] = (0, len(l))
+    pic_count[dir_path] = str(len(vl)) + " videos"
+    pic_mov_count[dir_path] = (0, len(vl))
     return
 
 
-def most_recent_list(img_file, ts):
-    recent_list.append((img_file, ts))
+def most_recent_list(img_file, ts, si):
+    recent_list.append((os.path.relpath(img_file, folder_root), ts, si))
 
 
-def gen_index_photos(dir_path, image_list, html, size_images, captions):
+def gen_index_photos(dir_path, image_list, html, size_images, captions, page_name):
     for filename in image_list:
         if size_images[filename][3] is None:
             date = iso = speed = focal = make = aperture = size = ""
@@ -268,13 +285,13 @@ def gen_index_photos(dir_path, image_list, html, size_images, captions):
         html += f"<a href=\"{filename}\" data-caption=\"{caption}|{f_name}{date}{iso}{focal}{speed}{aperture}{size}{make}\" data-fancybox=\"photo3\" />"
     existing = ""
     html += "\n\n</body></html>"
-    if os.path.isfile(dir_path + "/index.html"):
-        with open(dir_path + "/index.html") as fe:
+    if os.path.isfile(dir_path + "/" + page_name):
+        with open(dir_path + "/" + page_name) as fe:
             existing = fe.read()
 
     if existing != html:
-        print(dir_path + '/index.html')
-        with open(dir_path + '/index.html', 'w+') as fh:
+        print(dir_path + "/" + page_name)
+        with open(dir_path + "/" + page_name, 'w+') as fh:
             fh.write(html)
 
 
@@ -290,8 +307,8 @@ def main_photos():
         if os.path.isfile(dir_path + "/video"):
             gen_video(dir_path)
             continue
-        captions = getcaption(dir_path)
-        html = get_start(dir_path + "/header.html", dir_path);
+        captions = get_caption(dir_path)
+
         m_time = 0
         t_count = {}
         size_images = dict()
@@ -311,33 +328,51 @@ def main_photos():
                 image_list.append(path_image)
                 t_count[path_image] = os.path.getmtime(image)
             fm_time = os.path.getmtime(dir_path + "/" + path_image)
-            most_recent_list(dir_path + "/" + path_image, fm_time)
+            most_recent_list(dir_path + "/" + path_image, fm_time, size_images[path_image])
             if fm_time > m_time:
                 m_time = fm_time;
         Path(dir_path + "/" + "timestamp").touch()
         os.utime(dir_path + "/" + "timestamp", (m_time, m_time))
         image_list.sort()
+        image_list1 = sorted(t_count, key=t_count.__getitem__, reverse=True)
         if os.path.isfile(dir_path + "/reverse_time"):
-            image_list = sorted(t_count, key=t_count.__getitem__, reverse=True)
+            image_list, image_list1 = image_list1, image_list
         pic_count[dir_path] = str(len(image_list)) + " pictures"
         pic_mov_count[dir_path] = (len(image_list), 0)
-        for filename in image_list:
-            html += f"{{\"filename\":\"{filename}\",\"aspectRatio\":{size_images[filename][2]}}},"
-        html += get_part2()
-        gen_index_photos(dir_path, image_list, html, size_images, captions)
+        gen_photo_html(dir_path, image_list, size_images, captions, "index.html", "index1.html")
+        gen_photo_html(dir_path, image_list1, size_images, captions, "index1.html", "index.html")
+    r_list = []
+    size_images = dict()
+    html = get_start(folder_root + "/header_recent.html", folder_root)
+    for item in sorted(recent_list, key=lambda tup: tup[1], reverse=True)[0:500]:
+        r_list.append(item[0])
+        size_images[item[0]] = item[2]
+    for filename in r_list:
+        html += f"{{\"filename\":\"{filename}\",\"aspectRatio\":{size_images[filename][2]}}},"
+    html += get_part3()
+    gen_index_photos(folder_root, r_list, html, size_images, {}, "recent.html")
 
 
-def get_albumlist_name(folder):
+def gen_photo_html(dir_path, image_list, size_images, captions, index_name, index_name1):
+    html = get_start(dir_path + "/header.html", dir_path)
+    html = html.replace("_ORDER_INDEX_", index_name1)
+    for filename in image_list:
+        html += f"{{\"filename\":\"{filename}\",\"aspectRatio\":{size_images[filename][2]}}},"
+    html += get_part2()
+    gen_index_photos(dir_path, image_list, html, size_images, captions, index_name)
+
+
+def get_album_list_name(folder):
     name = ntpath.basename(folder)
-    dir = os.path.dirname(folder)
-    d = get_album_title(dir)
+    dir_name = os.path.dirname(folder)
+    d = get_album_title(dir_name)
     if name in d:
         return d[name]
     return "&nbsp;"
 
 
 def gen_album_list_index(folder, fcount, tcount, level):
-    smtimes = sorted(tcount, key=tcount.__getitem__, reverse=True)
+    sm_times = sorted(tcount, key=tcount.__getitem__, reverse=True)
     html = '''
 <html>
 <head>
@@ -381,7 +416,7 @@ def gen_album_list_index(folder, fcount, tcount, level):
 
 <div id="title2">
 '''
-    title = get_albumlist_name(folder)
+    title = get_album_list_name(folder)
     html = html.replace("_LEVEL_", str(level))
     if title == "&nbsp;":
         html = html.replace("__TITLE__", "Photo Album")
@@ -393,7 +428,7 @@ def gen_album_list_index(folder, fcount, tcount, level):
 
     # for name, val in fcount.items():
     a_title = get_album_title(folder)
-    for name in smtimes:
+    for name in sm_times:
         val = fcount[name]
         if val == 1:
             if (folder + "/" + name) in pic_count:
@@ -407,7 +442,7 @@ def gen_album_list_index(folder, fcount, tcount, level):
         html += cell.replace("_FOLDER_", name).replace("_TITLEALBUM_", a_title[name]).replace("_COUNT_", c).replace("_TIME_", time.strftime("%b %e %Y", time.gmtime(tcount[name])))
     html += "</body></html>"
     # print(folder + '/index.html')
-
+    existing = ""
     if os.path.isfile(folder + "/index.html"):
         with open(folder + "/index.html") as fe:
             existing = fe.read()
@@ -420,7 +455,7 @@ def gen_album_list_index(folder, fcount, tcount, level):
 
 
 def gen_info_page(folder, pix, mov, album):
-    html =    '''<html>
+    html = '''<html>
 <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="viewport" content="width=640">
@@ -477,6 +512,7 @@ def gen_info_page(folder, pix, mov, album):
 def gen_album_list_page(folder, count, level):
     pix_count = 0
     mov_count = 0
+    sub_folders = [f.path for f in os.scandir(folder_root) if f.is_dir()]
     if not os.path.isfile(folder + "/albumlist"):
         if os.path.isfile(folder + "/header.html"):
             if os.path.isfile(folder + "/timestamp"):
@@ -514,7 +550,6 @@ if __name__ == "__main__":
     pic_count = {}
     pic_mov_count = {}
     main_photos()
-    sub_folders = [f.path for f in os.scandir(folder_root) if f.is_dir()]
     gen_album_list_page(folder_root, 0, 0)
     print(len(recent_list))
 

@@ -424,7 +424,7 @@ def gen_album_list_index(folder, fcount, tcount, level):
         html = html.replace("__TITLE__", title)
     html += title + "</div>"
 
-    cell = '''<div class="pict"><a href="_FOLDER_/index.html"><img src="_FOLDER_/albumthumb.jpg" width="250px"><span class="caption">_TITLEALBUM_</span></a><span class="caption2">_COUNT_<br/>Updated _TIME_</span></div>'''
+    cell = '''<div class="pict"><a href="_FOLDER_/index.html"><img class="albumthumb" src="_FOLDER_/albumthumb.jpg"><span class="caption">_TITLEALBUM_</span></a><span class="caption2">_COUNT_<br/>Updated _TIME_</span></div>'''
 
     # for name, val in fcount.items():
     a_title = get_album_title(folder)

@@ -378,8 +378,8 @@ def gen_album_list_index(folder, fcount, tcount, level):
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <!-- Copyright (c) 2019 Florent Charpin -->
         <title>__TITLE__</title>
-        <link rel="stylesheet" type="text/css" href="_PATH_css/albumlist.css">
         <link rel="stylesheet" type="text/css" href="_PATH_css/album.css">
+        <link rel="stylesheet" type="text/css" href="_PATH_css/albumlist.css">
         <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 </head>
 
@@ -421,7 +421,7 @@ def gen_album_list_index(folder, fcount, tcount, level):
         html = html.replace("__TITLE__", "Photo Album")
     else:
         html = html.replace("__TITLE__", title)
-    html += title + "</div>"
+    html += title + "</div><div style=\"max-width: 2000px; margin: auto;\">"
 
     cell = '''<div class="pict"><a href="_FOLDER_/index.html"><img class="albumthumb" src="_FOLDER_/albumthumb.jpg"><span class="caption">_TITLEALBUM_</span></a><span class="caption2">_COUNT_<br/>Updated _TIME_</span></div>'''
 
@@ -439,7 +439,7 @@ def gen_album_list_index(folder, fcount, tcount, level):
         path_str = os.path.relpath(folder_root, folder) + "/"
         html = html.replace("_PATH_", path_str)
         html += cell.replace("_FOLDER_", name).replace("_TITLEALBUM_", a_title[name]).replace("_COUNT_", c).replace("_TIME_", time.strftime("%b %e %Y", time.gmtime(tcount[name])))
-    html += "</body></html>"
+    html += "\n</div></body></html>"
     # print(folder + '/index.html')
     existing = ""
     if os.path.isfile(folder + "/index.html"):

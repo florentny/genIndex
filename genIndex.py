@@ -16,12 +16,12 @@ def get_title_from_header(header):
 
 
 def get_start_video(header, dir_path):
-    html = '''
-    <!DOCTYPE html>
+    html = '''<!DOCTYPE html>
     <html>
     <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Copyright (c) 2019 Florent Charpin -->
     <title>_TITLE_</title>
     <script
       src="https://code.jquery.com/jquery-3.3.1.min.js"
@@ -99,18 +99,16 @@ def get_start_video(header, dir_path):
 
 
 def get_start(header, dir_path):
-    html = '''
-<!DOCTYPE html>
+    html = '''<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Copyright (c) 2019 Florent Charpin -->
 <title>_TITLE_</title>
 
 <script
-  src="https://code.jquery.com/jquery-3.3.1.min.js"
-  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-  crossorigin="anonymous"></script>
+  src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <script src="_PATH_js/jquery.fancybox.min.js"></script>
 <link rel="stylesheet" type="text/css" href="_PATH_css/jquery.fancybox.css">
 <link rel="stylesheet" type="text/css" href="_PATH_css/album.css">
@@ -373,11 +371,12 @@ def get_album_list_name(folder):
 
 def gen_album_list_index(folder, fcount, tcount, level):
     sm_times = sorted(tcount, key=tcount.__getitem__, reverse=True)
-    html = '''
+    html = '''<!DOCTYPE html>
 <html>
 <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Copyright (c) 2019 Florent Charpin -->
         <title>__TITLE__</title>
         <link rel="stylesheet" type="text/css" href="_PATH_css/albumlist.css">
         <link rel="stylesheet" type="text/css" href="_PATH_css/album.css">
@@ -455,14 +454,36 @@ def gen_album_list_index(folder, fcount, tcount, level):
 
 
 def gen_info_page(folder, pix, mov, album):
-    html = '''<html>
+    html = '''<!DOCTYPE html>
+<html>
 <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="viewport" content="width=640">
+        <!-- Copyright (c) 2019 Florent Charpin -->
         <title>Photo Album</title>
         <link rel="stylesheet" type="text/css" href="./css/albumlist.css">
         <link rel="stylesheet" type="text/css" href="./css/album.css">
         <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+        <style>
+        @keyframes spinit {
+        from {transform: scale(0) rotate(0deg); filter: grayscale(0%) blur(20px);border-radius: 50%;}
+        to {transform: scale(1.0) rotate(360deg);filter: grayscale(100%) blur(0);}
+    }
+
+    .self {
+        width: 250px;
+        border-radius: 50%;
+        animation-name: spinit;
+        animation-duration: 4s;
+        filter: grayscale(100%) blur(0);
+    }
+
+    .selfie {
+        margin: auto;
+        text-align: center;
+
+    }
+        </style>
 </head>
 
 <body>
@@ -492,7 +513,10 @@ def gen_info_page(folder, pix, mov, album):
                  Web Software &#169; 2019 Florent Charpin
                 <br /><br />
 <div>For any info or questions please email &#119;&#119;&#119;&#064;&#099;&#104;&#097;&#114;&#112;&#105;&#110;&#046;&#110;&#101;&#116;</div>
-
+                <br /><br />
+                <div class="selfie">
+                <img class="self" src="img/me.jpg">
+      </div>
              </div>
 
 </body></html>

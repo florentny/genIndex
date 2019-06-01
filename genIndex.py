@@ -110,6 +110,7 @@ def get_start(header, dir_path):
 <script
   src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <script src="_PATH_js/jquery.fancybox.min.js"></script>
+<script src="_PATH_js/helper.js"></script>
 <link rel="stylesheet" type="text/css" href="_PATH_css/jquery.fancybox.css">
 <link rel="stylesheet" type="text/css" href="_PATH_css/album.css">
 </head>
@@ -138,6 +139,8 @@ def get_start(header, dir_path):
                 <a href="../." title=""><img class="top" src="_PATH_icon/chevron-left.png" /><span class="backto">&nbsp;Back to _FOLDER_ albums</span></a>
                 <a href="_PATH_info.html" title="Info" style="float:right"><img class="top" src="_PATH_icon/info.png" /></a>
                 <a href="_ORDER_INDEX_" class="order" title="Switch order"><img class="top" src="_PATH_icon/order.png" /></a>
+                <a onclick="changeSizep()" class="order" title="+/-">+</a>
+                <a onclick="changeSizem()" class="order" title="+/-">-</a>
                   <i class="fa fa-bars"></i>
         </div>
 

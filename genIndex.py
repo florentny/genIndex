@@ -1,6 +1,5 @@
 import os
 from PIL import Image
-from PIL.ExifTags import TAGS
 from pathlib import Path
 import time
 import ntpath
@@ -21,7 +20,7 @@ def get_start_video(header, dir_path):
     <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Copyright (c) 2019 Florent Charpin -->
+    <!-- Copyright (c) 2020 Florent Charpin -->
     <title>_TITLE_</title>
     <script
       src="https://code.jquery.com/jquery-3.3.1.min.js"
@@ -54,19 +53,15 @@ def get_start_video(header, dir_path):
     </head>
     <body>
 
-    <script type="text/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-3281928-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
-      var _gaq = _gaq || [];
-      _gaq.push(['_setAccount', 'UA-3281928-2']);
-      _gaq.push(['_trackPageview']);
+  gtag('config', 'UA-3281928-2');
+</script>
 
-      (function() {
-        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-      })();
-
-    </script>
 
     <div class="topnav" id="myTopnav">
                     <a href="_PATH_" title="go Home" class="active"><img class="top" src="_PATH_icon/home.png" /></a>
@@ -104,7 +99,7 @@ def get_start(header, dir_path):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Copyright (c) 2019 Florent Charpin -->
+<!-- Copyright (c) 2020 Florent Charpin -->
 <title>_TITLE_</title>
 
 <script
@@ -116,19 +111,15 @@ def get_start(header, dir_path):
 </head>
 <body id="myTopnav">
 
-<script type="text/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-3281928-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-3281928-2']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
+  gtag('config', 'UA-3281928-2');
 </script>
+
 
 <div class="topnav">
                 <a href="_PATH_" title="Go Home" class="active"><img class="top" src="_PATH_icon/home.png" /></a>
@@ -182,13 +173,13 @@ def get_part2():
         }).enable();
     </script>
     <br />
-<div id="bottom">&copy; 2019 Florent Charpin</div>
+<div id="bottom">&copy; 2020 Florent Charpin</div>
 '''
-    return html;
+    return html
 
 
 def get_part3():
-    html = '''
+    html: str = '''
 ];
         var pig = new Pig(imageData, {
             urlForSize: function(filename, size) {
@@ -198,9 +189,9 @@ def get_part3():
         }).enable();
     </script>
     <br />
-<div id="bottom">&copy; 2019 Florent Charpin</div>
+<div id="bottom">&copy; 2020 Florent Charpin</div>
 '''
-    return html;
+    return html
 
 
 def get_caption(dirpath):
@@ -244,7 +235,7 @@ def gen_video(dir_path):
         for line in f:
             vl.append(line.rstrip().split('|'))
 
-    html = get_start_video(dir_path + "/header.html", dir_path);
+    html = get_start_video(dir_path + "/header.html", dir_path)
     for item in vl:
         html += f"<div class=\"pict\"><a data-fancybox href=\"https://{item[2]}\"><img width=\"300px\" class=\"card-img-top img-fluid\" data-caption=\"{item[1]}\" src=\"{item[0]}\"></a >"
         html += f"<span class=\"caption\">{item[1]}</span></div>"
@@ -275,11 +266,15 @@ def gen_index_photos(dir_path, image_list, html, size_images, captions, page_nam
             f_name = filename + " - "
             make = (size_images[filename][3][272]) if (272 in size_images[filename][3]) else ""
             date = (size_images[filename][3][36867] + " - ") if (36867 in size_images[filename][3]) else ""
-            iso = (" iso " + str(size_images[filename][3][34855]) + " - ") if (34855 in size_images[filename][3]) else ""
-            focal = (" focal: " + str(size_images[filename][3][37386][0]/size_images[filename][3][37386][1]) + "mm - ") if (37386 in size_images[filename][3]) else ""
-            speed = (" speed: " + str(size_images[filename][3][33434][0]) + "/" + str(size_images[filename][3][33434][1]) + " - ") if (33434 in size_images[filename][3]) else ""
+            iso = (" iso " + str(size_images[filename][3][34855]) + " - ") if (
+                        34855 in size_images[filename][3]) else ""
+            focal = (" focal: " + str(round(float(size_images[filename][3][37386]), 2)) + "mm - ") if (
+                        37386 in size_images[filename][3]) else ""
+            speed = (" speed: " + str(size_images[filename][3][33434].real) + " - ") if (
+                        33434 in size_images[filename][3]) else ""
             aperture = (" f/" + str(
-                round(size_images[filename][3][33437][0] / size_images[filename][3][33437][1], 1)) + " - ") if (
+                round(size_images[filename][3][33437].numerator / size_images[filename][3][33437].denominator,
+                      1)) + " - ") if (
                     33437 in size_images[filename][3]) else ""
             size = f"{size_images[filename][0]}x{size_images[filename][1]} - "
         caption = "" if captions.get(filename) is None else captions.get(filename)
@@ -324,14 +319,14 @@ def main_photos():
             with Image.open(image) as img:
                 width, height = img.size
                 ratio = width / height
-                info = img._getexif()
+                info = img.getexif()
                 size_images[path_image] = (width, height, ratio, info)
                 image_list.append(path_image)
                 t_count[path_image] = os.path.getmtime(image)
             fm_time = os.path.getmtime(dir_path + "/" + path_image)
             most_recent_list(dir_path + "/" + path_image, fm_time, size_images[path_image])
             if fm_time > m_time:
-                m_time = fm_time;
+                m_time = fm_time
         Path(dir_path + "/" + "timestamp").touch()
         os.utime(dir_path + "/" + "timestamp", (m_time, m_time))
         image_list.sort()
@@ -379,7 +374,7 @@ def gen_album_list_index(folder, fcount, tcount, level):
 <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <!-- Copyright (c) 2019 Florent Charpin -->
+        <!-- Copyright (c) 2020 Florent Charpin -->
         <title>__TITLE__</title>
         <link rel="stylesheet" type="text/css" href="_PATH_css/album.css">
         <link rel="stylesheet" type="text/css" href="_PATH_css/albumlist.css">
@@ -399,19 +394,16 @@ def gen_album_list_index(folder, fcount, tcount, level):
     var banner_link = "_PATH_banner.html";
     var level = _LEVEL_;
 </script>
-<script type="text/javascript">
 
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-3281928-2']);
-  _gaq.push(['_trackPageview']);
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-3281928-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
+  gtag('config', 'UA-3281928-2');
 </script>
+
 
 <script src="_PATH_js/showhide.js"></script>
 <div id="banner"></div>
@@ -441,7 +433,8 @@ def gen_album_list_index(folder, fcount, tcount, level):
             c = str(val) + " albums"
         path_str = os.path.relpath(folder_root, folder) + "/"
         html = html.replace("_PATH_", path_str)
-        html += cell.replace("_FOLDER_", name).replace("_TITLEALBUM_", a_title[name]).replace("_COUNT_", c).replace("_TIME_", time.strftime("%b %e %Y", time.gmtime(tcount[name])))
+        html += cell.replace("_FOLDER_", name).replace("_TITLEALBUM_", a_title[name]).replace("_COUNT_", c).replace(
+            "_TIME_", time.strftime("%b %e %Y", time.gmtime(tcount[name])))
     html += "\n</div></body></html>"
     # print(folder + '/index.html')
     existing = ""
@@ -462,7 +455,7 @@ def gen_info_page(folder, pix, mov, album):
 <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="viewport" content="width=640">
-        <!-- Copyright (c) 2019 Florent Charpin -->
+        <!-- Copyright (c) 2020 Florent Charpin -->
         <title>Photo Album</title>
         <link rel="stylesheet" type="text/css" href="./css/albumlist.css">
         <link rel="stylesheet" type="text/css" href="./css/album.css">
@@ -487,6 +480,16 @@ def gen_info_page(folder, pix, mov, album):
 
     }
         </style>
+        
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-3281928-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-3281928-2');
+</script>
+
 </head>
 
 <body>
@@ -495,17 +498,7 @@ def gen_info_page(folder, pix, mov, album):
  <a href="./info.html" style="float:right"><img class="top" src="./icdeon/info.png" /></a>
   <i class="fa fa-bars"></i>
 </div>
-<script type="text/javascript">
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-3281928-2']);
-  _gaq.push(['_trackPageview']);
 
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-</script>
 <body>
 
         <div id="content">
@@ -513,7 +506,7 @@ def gen_info_page(folder, pix, mov, album):
                 Number of Albums: __ALBUM__<br />Number of Photos: __PIX__<br />Number of Movies: __MOV__<br /><br /><br />
                  All pictures on this site are &#169; Florent Charpin. All rights reserved.
                  <br />
-                 Web Software &#169; 2019 Florent Charpin
+                 Web Software &#169; 2020 Florent Charpin
                 <br /><br />
 <div>For any info or questions please email &#119;&#119;&#119;&#064;&#099;&#104;&#097;&#114;&#112;&#105;&#110;&#046;&#110;&#101;&#116;</div>
                 <br /><br />
@@ -539,7 +532,6 @@ def gen_info_page(folder, pix, mov, album):
 def gen_album_list_page(folder, count, level):
     pix_count = 0
     mov_count = 0
-    sub_folders = [f.path for f in os.scandir(folder_root) if f.is_dir()]
     if not os.path.isfile(folder + "/albumlist"):
         if os.path.isfile(folder + "/header.html"):
             if os.path.isfile(folder + "/timestamp"):
@@ -555,18 +547,18 @@ def gen_album_list_page(folder, count, level):
     tcount = {}
     timestamp = 0
     for name in sub_folders:
-            num, ts, pixmov = gen_album_list_page(folder + "/" + name, 0, level+1)
-            fcount[name] = num
-            tcount[name] = ts
-            count += num
-            if ts > timestamp:
-                timestamp = ts
-            pix_count += pixmov[0]
-            mov_count += pixmov[1]
+        num, ts, pixmov = gen_album_list_page(folder + "/" + name, 0, level + 1)
+        fcount[name] = num
+        tcount[name] = ts
+        count += num
+        if ts > timestamp:
+            timestamp = ts
+        pix_count += pixmov[0]
+        mov_count += pixmov[1]
     gen_album_list_index(folder, fcount, tcount, level)
     gen_info_page(folder, pix_count, mov_count, count)
     # print("folder: " + folder + " albums: " + str(count) + " pix: " + str(pix_count) + " video: " + str(mov_count))
-    return count, timestamp, (pix_count, mov_count);
+    return count, timestamp, (pix_count, mov_count)
 
 
 if __name__ == "__main__":
@@ -582,7 +574,7 @@ if __name__ == "__main__":
 
 # print("\n\n\n\n" + os.path.relpath("/home/fc/dev/photo3/", "/home/fc/dev/photo3/photo_dir/maui"))
 
-#print(get_start())
+# print(get_start())
 
 # for tag, value in size_images["IMG_4076.jpg"][3].items():
 #    print(tag, TAGS.get(tag, tag), value)
@@ -590,4 +582,3 @@ if __name__ == "__main__":
 # print("========")
 # print(info[36867])
 # print(size_images["IMG_0111.jpg"][3])
-

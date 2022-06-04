@@ -11,7 +11,7 @@ def get_title_from_header(header):
         return "Photo Album"
     else:
         with open(header) as f:
-            title = f.readlines()[1].rstrip()
+            title = f.readlines()[1].rstrip().split("<")[0];
     return title
 
 
@@ -264,6 +264,7 @@ def gen_index_photos(dir_path, image_list, html, size_images, captions, page_nam
             date = iso = speed = focal = make = aperture = size = ""
             f_name = filename
         else:
+            #print(size_images[filename][3])
             f_name = filename + " - "
             make = (size_images[filename][3][272]) if (272 in size_images[filename][3]) else ""
             date = (size_images[filename][3][36867] + " - ") if (36867 in size_images[filename][3]) else ""
@@ -320,7 +321,7 @@ def main_photos():
             with Image.open(image) as img:
                 width, height = img.size
                 ratio = width / height
-                info = img.getexif()
+                info = img._getexif()
                 size_images[path_image] = (width, height, ratio, info)
                 image_list.append(path_image)
                 t_count[path_image] = os.path.getmtime(image)
@@ -329,7 +330,11 @@ def main_photos():
             if fm_time > m_time:
                 m_time = fm_time
         Path(dir_path + "/" + "timestamp").touch()
-        os.utime(dir_path + "/" + "timestamp", (m_time, m_time))
+        if not os.path.exists(dir_path + "/" + "freeze"):
+            os.utime(dir_path + "/" + "timestamp", (m_time, m_time))
+        else:
+            m_time = os.path.getmtime(dir_path + "/" + "freeze")
+            os.utime(dir_path + "/" + "timestamp", (m_time, m_time))
         image_list.sort()
         image_list1 = sorted(t_count, key=t_count.__getitem__, reverse=True)
         if os.path.isfile(dir_path + "/reverse_time"):

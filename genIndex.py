@@ -11,7 +11,7 @@ def get_title_from_header(header):
         return "Photo Album"
     else:
         with open(header) as f:
-            title = f.readlines()[1].rstrip().split("<")[0];
+            title = f.readlines()[1].rstrip().split("<")[0]
     return title
 
 
@@ -21,7 +21,7 @@ def get_start_video(header, dir_path):
     <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Copyright (c) 2020 Florent Charpin -->
+    <!-- Copyright (c) 2025 Florent Charpin -->
     <title>_TITLE_</title>
     <script
       src="https://code.jquery.com/jquery-3.3.1.min.js"
@@ -54,13 +54,14 @@ def get_start_video(header, dir_path):
     </head>
     <body>
 
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-3281928-2"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SL8KGBXYSY"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
-  gtag('config', 'UA-3281928-2');
+  gtag('config', 'G-SL8KGBXYSY');
 </script>
 
 
@@ -100,7 +101,7 @@ def get_start(header, dir_path):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Copyright (c) 2020 Florent Charpin -->
+<!-- Copyright (c) 2025 Florent Charpin -->
 <title>_TITLE_</title>
 
 <script
@@ -112,13 +113,14 @@ def get_start(header, dir_path):
 </head>
 <body id="myTopnav">
 
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-3281928-2"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SL8KGBXYSY"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
-  gtag('config', 'UA-3281928-2');
+  gtag('config', 'G-SL8KGBXYSY');
 </script>
 
 
@@ -174,7 +176,7 @@ def get_part2():
         }).enable();
     </script>
     <br />
-<div id="bottom">&copy; 2020 Florent Charpin</div>
+<div id="bottom">&copy; 2025 Florent Charpin</div>
 '''
     return html
 
@@ -190,7 +192,7 @@ def get_part3():
         }).enable();
     </script>
     <br />
-<div id="bottom">&copy; 2020 Florent Charpin</div>
+<div id="bottom">&copy; 2025 Florent Charpin</div>
 '''
     return html
 
@@ -380,7 +382,7 @@ def gen_album_list_index(folder, fcount, tcount, level):
 <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <!-- Copyright (c) 2020 Florent Charpin -->
+        <!-- Copyright (c) 2025 Florent Charpin -->
         <title>__TITLE__</title>
         <link rel="stylesheet" type="text/css" href="_PATH_css/album.css">
         <link rel="stylesheet" type="text/css" href="_PATH_css/albumlist.css">
@@ -461,7 +463,7 @@ def gen_info_page(folder, pix, mov, album):
 <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="viewport" content="width=640">
-        <!-- Copyright (c) 2020 Florent Charpin -->
+        <!-- Copyright (c) 2025 Florent Charpin -->
         <title>Photo Album</title>
         <link rel="stylesheet" type="text/css" href="./css/albumlist.css">
         <link rel="stylesheet" type="text/css" href="./css/album.css">
@@ -512,7 +514,7 @@ def gen_info_page(folder, pix, mov, album):
                 Number of Albums: __ALBUM__<br />Number of Photos: __PIX__<br />Number of Movies: __MOV__<br /><br /><br />
                  All pictures on this site are &#169; Florent Charpin. All rights reserved.
                  <br />
-                 Web Software &#169; 2020 Florent Charpin
+                 Web Software &#169; 2025 Florent Charpin
                 <br /><br />
 <div>For any info or questions please email &#119;&#119;&#119;&#064;&#099;&#104;&#097;&#114;&#112;&#105;&#110;&#046;&#110;&#101;&#116;</div>
                 <br /><br />
